@@ -101,10 +101,10 @@ const ContactPage = () => {
                   For general inquiries and support
                 </p>
                 <a 
-                  href="mailto:hello@universe.app" 
+                  href="mailto:hello@sympan.app" 
                   className="text-primary hover:underline"
                 >
-                  hello@universe.app
+                  hello@sympan.app
                 </a>
               </div>
               
@@ -127,12 +127,12 @@ const ContactPage = () => {
                   </li>
                   <li>
                     <a href="/careers" className="text-muted-foreground hover:text-primary transition-colors">
-                      → Careers at UniVerse
+                      → Careers at Sympan
                     </a>
                   </li>
                   <li>
                     <a href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                      → Learn about UniVerse
+                      → Learn about Sympan
                     </a>
                   </li>
                 </ul>

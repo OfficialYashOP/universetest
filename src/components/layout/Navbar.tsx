@@ -23,13 +23,13 @@ const Navbar = () => {
           <Link to="/" className="flex items-center gap-3 group">
             <motion.img
               src={logo}
-              alt="UniVerse Logo"
+              alt="Sympan Logo"
               className="h-10 w-10 md:h-12 md:w-12 rounded-xl object-cover"
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 400 }}
             />
             <span className="text-xl md:text-2xl font-bold gradient-text">
-              UniVerse
+              Sympan
             </span>
           </Link>
 

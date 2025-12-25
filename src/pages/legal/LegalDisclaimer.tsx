@@ -20,8 +20,8 @@ const LegalDisclaimer = () => {
         <div className="space-y-8">
           <section className="bg-card border border-border rounded-xl p-6">
             <p className="text-muted-foreground leading-relaxed">
-              Please read this Legal Disclaimer carefully before using UniVerse. 
-              This disclaimer outlines the limitations of our platform and clarifies what UniVerse is and is not responsible for.
+              Please read this Legal Disclaimer carefully before using Sympan. 
+              This disclaimer outlines the limitations of our platform and clarifies what Sympan is and is not responsible for.
             </p>
           </section>
 
@@ -35,12 +35,12 @@ const LegalDisclaimer = () => {
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-4">
                 <p className="text-blue-400">
-                  <strong>UniVerse is an independent platform</strong> — we are not affiliated with, endorsed by, 
+                  <strong>Sympan is an independent platform</strong> — we are not affiliated with, endorsed by, 
                   or acting as an official representative of any university or educational institution.
                 </p>
               </div>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                <li>UniVerse is a technology platform that connects verified university community members</li>
+                <li>Sympan is a technology platform that connects verified university community members</li>
                 <li>We do not have official authority over university matters</li>
                 <li>Our verification process confirms university affiliation but does not grant official status</li>
                 <li>University-specific information should be verified through official university channels</li>
@@ -57,7 +57,7 @@ const LegalDisclaimer = () => {
             
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <p className="text-muted-foreground">
-                <strong className="text-foreground">UniVerse is not responsible for content posted by users.</strong> This includes:
+                <strong className="text-foreground">Sympan is not responsible for content posted by users.</strong> This includes:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
                 <li>Posts, comments, and messages shared on the platform</li>
@@ -83,7 +83,7 @@ const LegalDisclaimer = () => {
             
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <p className="text-muted-foreground">
-                <strong className="text-foreground">UniVerse does not guarantee the accuracy of housing or resource listings.</strong>
+                <strong className="text-foreground">Sympan does not guarantee the accuracy of housing or resource listings.</strong>
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
                 <li>We do not verify the physical condition, availability, or legality of listed properties</li>
@@ -104,7 +104,7 @@ const LegalDisclaimer = () => {
             
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <p className="text-muted-foreground">
-                <strong className="text-foreground">UniVerse is not responsible for third-party services listed on our platform.</strong>
+                <strong className="text-foreground">Sympan is not responsible for third-party services listed on our platform.</strong>
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
                 <li>Local businesses and service providers are independent entities</li>
@@ -124,7 +124,7 @@ const LegalDisclaimer = () => {
             
             <div className="bg-card border border-border rounded-xl p-6">
               <p className="text-muted-foreground">
-                UniVerse may contain links to external websites or services. We are not responsible for:
+                Sympan may contain links to external websites or services. We are not responsible for:
               </p>
               <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
                 <li>The content, privacy practices, or policies of external sites</li>
@@ -146,7 +146,7 @@ const LegalDisclaimer = () => {
             
             <div className="bg-card border border-border rounded-xl p-6">
               <p className="text-muted-foreground">
-                To the maximum extent permitted by law, UniVerse and its team shall not be liable for:
+                To the maximum extent permitted by law, Sympan and its team shall not be liable for:
               </p>
               <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
                 <li>Any direct, indirect, incidental, or consequential damages</li>
@@ -163,7 +163,7 @@ const LegalDisclaimer = () => {
             <h2 className="text-xl font-bold mb-3">Questions?</h2>
             <p className="text-muted-foreground">
               If you have questions about this Legal Disclaimer, please contact us at{" "}
-              <a href="mailto:legal@universe.app" className="text-primary hover:underline">legal@universe.app</a>
+              <a href="mailto:legal@sympan.app" className="text-primary hover:underline">legal@sympan.app</a>
             </p>
           </section>
         </div>
