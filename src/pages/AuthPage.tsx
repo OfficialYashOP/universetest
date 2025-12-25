@@ -229,365 +229,73 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Form */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12">
-        <div className="w-full max-w-md">
-          {/* Back Button */}
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Back Button */}
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </Link>
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-8">
+          <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
+          <span className="text-2xl font-bold gradient-text">UniVerse</span>
+        </div>
+
+        <h1 className="text-3xl font-bold mb-2">Welcome to UniVerse</h1>
+        <p className="text-muted-foreground mb-8">Choose how you want to continue</p>
+
+        <div className="space-y-4">
+          {/* Student Option */}
+          <Link to="/auth/student" className="block">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card p-6 border border-border hover:border-primary/50 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">I'm a Student</h3>
+                  <p className="text-sm text-muted-foreground">Students, Seniors, Alumni, Staff</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </motion.div>
           </Link>
 
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
-            <span className="text-2xl font-bold gradient-text">UniVerse</span>
-          </div>
-
-          {/* Header */}
-          <AnimatePresence mode="wait">
+          {/* Partner Option */}
+          <Link to="/partners" className="block">
             <motion.div
-              key={isSignUp ? `signup-${step}` : "signin"}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card p-6 border border-border hover:border-primary/50 transition-colors cursor-pointer"
             >
-              <h1 className="text-3xl font-bold mb-2">
-                {isSignUp 
-                  ? step === 1 ? "Join Your Campus" : "Almost There!"
-                  : "Welcome Back"
-                }
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                {isSignUp 
-                  ? step === 1 
-                    ? "Tell us about yourself" 
-                    : "Create your account credentials"
-                  : "Sign in to access your campus community"
-                }
-              </p>
-              
-              {/* Step indicator for signup */}
-              {isSignUp && (
-                <div className="flex gap-2 mb-6">
-                  {[1, 2].map((s) => (
-                    <div
-                      key={s}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        s <= step ? "bg-primary" : "bg-muted"
-                      }`}
-                    />
-                  ))}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-secondary" />
                 </div>
-              )}
+                <div className="flex-1">
+                  <h3 className="font-semibold">I'm a Vendor / Poster</h3>
+                  <p className="text-sm text-muted-foreground">Housing, Jobs, Local Services</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-muted-foreground" />
+              </div>
             </motion.div>
-          </AnimatePresence>
-
-          {/* Form */}
-          <AnimatePresence mode="wait">
-            <motion.form
-              key={`form-${isSignUp}-${step}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-5"
-              onSubmit={isSignUp ? handleSignUp : handleSignIn}
-            >
-              {isSignUp && step === 1 && (
-                <>
-                  {/* University Selection */}
-                  <div className="space-y-2">
-                    <Label>Select Your University</Label>
-                    {loadingUniversities ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-2">
-                        {universities.map((uni) => (
-                          <button
-                            key={uni.id}
-                            type="button"
-                            onClick={() => setUniversityId(uni.id)}
-                            className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
-                              universityId === uni.id
-                                ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                                : "border-border hover:border-primary/50 hover:bg-muted"
-                            }`}
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden p-1 flex-shrink-0">
-                              {uni.logo_url ? (
-                                <img src={uni.logo_url} alt={uni.name} className="w-full h-full object-contain" />
-                              ) : (
-                                <Building2 className="w-5 h-5 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="block text-sm font-medium truncate">{uni.short_name || uni.name}</span>
-                              <span className="block text-xs text-muted-foreground truncate">{uni.name}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Full Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="h-12 pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Role Selection */}
-                  <div className="space-y-2">
-                    <Label>I am a...</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {ROLES.map((r) => (
-                        <button
-                          key={r.value}
-                          type="button"
-                          onClick={() => setRole(r.value)}
-                          className={`p-3 rounded-lg border transition-all text-left ${
-                            role === r.value
-                              ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                              : "border-border hover:border-primary/50 hover:bg-muted"
-                          }`}
-                        >
-                          <span className="block text-sm font-medium">{r.label}</span>
-                          <span className="block text-xs text-muted-foreground">{r.description}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Next Button */}
-                  <Button 
-                    type="button" 
-                    variant="hero" 
-                    size="lg" 
-                    className="w-full"
-                    onClick={handleNextStep}
-                  >
-                    Continue
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </>
-              )}
-
-              {isSignUp && step === 2 && (
-                <>
-                  {/* Back to step 1 */}
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-2"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to details
-                  </button>
-
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email">University Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="yourname@university.edu"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="h-12 pl-10"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <BadgeCheck className="w-3 h-3 text-universe-cyan" />
-                      Use your official university email for verification
-                    </p>
-                  </div>
-
-                  {/* Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Create a strong password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-12 pl-10 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      At least 6 characters
-                    </p>
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button 
-                    type="submit" 
-                    variant="hero" 
-                    size="lg" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <GraduationCap className="mr-2" />
-                        Create Account
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-
-              {!isSignUp && (
-                <>
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="h-12 pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-12 pl-10 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button 
-                    type="submit" 
-                    variant="hero" 
-                    size="lg" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <GraduationCap className="mr-2" />
-                        Sign In
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </motion.form>
-          </AnimatePresence>
-
-          {/* Toggle Auth Mode */}
-          <p className="text-center text-muted-foreground mt-6">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={toggleMode}
-              className="text-primary hover:underline font-medium"
-            >
-              {isSignUp ? "Sign In" : "Sign Up"}
-            </button>
-          </p>
+          </Link>
         </div>
-      </div>
 
-      {/* Right Panel - Visual */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-universe-purple/30 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-universe-blue/30 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
-        
-        <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center">
-          <motion.img
-            src={logo}
-            alt="UniVerse"
-            className="w-32 h-32 rounded-3xl shadow-glow mb-8"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          />
-          <h2 className="text-3xl font-bold mb-4">
-            The Digital Campus for
-            <span className="block gradient-text">Verified Students</span>
-          </h2>
-          <p className="text-muted-foreground max-w-sm">
-            Connect with your campus community, find housing, discover services, 
-            and build lifelong connections.
-          </p>
-
-          {/* Features */}
-          <div className="mt-12 space-y-4 text-left">
-            {[
-              "University-verified community",
-              "Secure & scam-free platform",
-              "Housing & roommate finder",
-              "Academic resources sharing"
-            ].map((feature, i) => (
-              <motion.div
-                key={feature}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-2 h-2 rounded-full bg-universe-cyan" />
-                <span className="text-muted-foreground">{feature}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <p className="text-center text-xs text-muted-foreground mt-8">
+          By continuing, you agree to our{" "}
+          <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
+          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   );

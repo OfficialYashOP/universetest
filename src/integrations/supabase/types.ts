@@ -150,9 +150,11 @@ export type Database = {
           gender_preference: string | null
           id: string
           images: string[] | null
+          is_vendor_listing: boolean | null
           is_verified: boolean | null
           listing_type: string
           location: string | null
+          partner_id: string | null
           price: number | null
           room_type: string | null
           status: Database["public"]["Enums"]["listing_status"] | null
@@ -170,9 +172,11 @@ export type Database = {
           gender_preference?: string | null
           id?: string
           images?: string[] | null
+          is_vendor_listing?: boolean | null
           is_verified?: boolean | null
           listing_type: string
           location?: string | null
+          partner_id?: string | null
           price?: number | null
           room_type?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
@@ -190,9 +194,11 @@ export type Database = {
           gender_preference?: string | null
           id?: string
           images?: string[] | null
+          is_vendor_listing?: boolean | null
           is_verified?: boolean | null
           listing_type?: string
           location?: string | null
+          partner_id?: string | null
           price?: number | null
           room_type?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
@@ -210,6 +216,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      job_listings: {
+        Row: {
+          company: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          job_type: string | null
+          location: string | null
+          partner_id: string
+          pay: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          partner_id: string
+          pay?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          partner_id?: string
+          pay?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       local_services: {
         Row: {
@@ -462,6 +519,51 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_posts: {
+        Row: {
+          category: string
+          condition: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          price: number | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          condition?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          condition?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title?: string
+          university_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -496,6 +598,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partners: {
+        Row: {
+          address: string | null
+          business_name: string
+          category: string
+          created_at: string
+          document_url: string | null
+          id: string
+          phone: string
+          serving_university_ids: string[] | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          category: string
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          phone: string
+          serving_university_ids?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          category?: string
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          phone?: string
+          serving_university_ids?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       post_comments: {
         Row: {
@@ -679,6 +823,51 @@ export type Database = {
           },
         ]
       }
+      roommate_requests: {
+        Row: {
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          description: string | null
+          gender_preference: string | null
+          id: string
+          location_preference: string | null
+          move_in_date: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          university_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          gender_preference?: string | null
+          id?: string
+          location_preference?: string | null
+          move_in_date?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          university_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          gender_preference?: string | null
+          id?: string
+          location_preference?: string | null
+          move_in_date?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          university_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       universities: {
         Row: {
           banner_url: string | null
@@ -827,7 +1016,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "student" | "senior" | "alumni" | "staff" | "service_provider"
+      app_role:
+        | "student"
+        | "senior"
+        | "alumni"
+        | "staff"
+        | "service_provider"
+        | "partner_vendor"
       listing_status: "active" | "inactive" | "sold" | "rented"
       verification_status: "pending" | "verified" | "rejected"
     }
@@ -957,7 +1152,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["student", "senior", "alumni", "staff", "service_provider"],
+      app_role: [
+        "student",
+        "senior",
+        "alumni",
+        "staff",
+        "service_provider",
+        "partner_vendor",
+      ],
       listing_status: ["active", "inactive", "sold", "rented"],
       verification_status: ["pending", "verified", "rejected"],
     },

@@ -33,6 +33,14 @@ import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
 import RequestUniversityPage from "./pages/RequestUniversityPage";
 
+// Auth Pages
+import StudentAuthPage from "./pages/auth/StudentAuthPage";
+import PartnerAuthPage from "./pages/auth/PartnerAuthPage";
+
+// Partner Pages
+import PartnersLandingPage from "./pages/partners/PartnersLandingPage";
+import PartnerDashboard from "./pages/partners/PartnerDashboard";
+
 // LPU Campus Assist Pages
 import LPUCampusAssist from "./pages/lpu/LPUCampusAssist";
 import LPUEmergency from "./pages/lpu/LPUEmergency";
@@ -54,8 +62,14 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/student" element={<StudentAuthPage />} />
+              <Route path="/auth/partner" element={<PartnerAuthPage />} />
               <Route path="/auth/verify" element={<VerifyPage />} />
               <Route path="/select-university" element={<SelectUniversityPage />} />
+              
+              {/* Partner Routes */}
+              <Route path="/partners" element={<PartnersLandingPage />} />
+              <Route path="/partners/dashboard" element={<PartnerDashboard />} />
               
               {/* Protected App Routes */}
               <Route path="/app/university/:slug" element={
