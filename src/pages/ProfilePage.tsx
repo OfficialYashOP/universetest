@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AccountSettings } from "@/components/profile/AccountSettings";
 import UniversityLogo from "@/components/university/UniversityLogo";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   User, 
   Mail, 
@@ -26,23 +29,32 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Save
+  Save,
+  Settings,
+  AlertTriangle,
+  ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow, differenceInDays } from "date-fns";
 
 const ProfilePage = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "profile";
+  const navigate = useNavigate();
   
   const { profile, loading, updateProfile, uploadAvatar, uploadVerificationDocument } = useProfile();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -55,8 +67,28 @@ const ProfilePage = () => {
     roll_number: profile?.roll_number || "",
   });
 
+  // Check edit limits
+  const canEditUsername = !profile?.username_updated_at || 
+    differenceInDays(new Date(), new Date(profile.username_updated_at)) >= 30;
+  const canEditFullName = !profile?.full_name_updated_at || 
+    differenceInDays(new Date(), new Date(profile.full_name_updated_at)) >= 30;
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchRole = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setUserRole(data?.role || null);
+    };
+    fetchRole();
+  }, [user]);
+
   // Update form data when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData({
         full_name: profile.full_name || "",
@@ -67,7 +99,7 @@ const ProfilePage = () => {
         roll_number: profile.roll_number || "",
       });
     }
-  });
+  }, [profile]);
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -85,6 +117,20 @@ const ProfilePage = () => {
       default:
         return { icon: Shield, text: "Not Verified", color: "text-muted-foreground bg-muted" };
     }
+  };
+
+  const getVerificationDocumentLabel = () => {
+    if (userRole === "alumni") {
+      return "Upload Transcript / Degree Certificate";
+    }
+    return "Upload University ID Card";
+  };
+
+  const getVerificationDocumentDescription = () => {
+    if (userRole === "alumni") {
+      return "Upload a clear photo of your transcript, degree certificate, or any official document from your university.";
+    }
+    return "Upload a clear photo of your university ID card, enrollment letter, or any official document that shows your name and university.";
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +158,42 @@ const ProfilePage = () => {
     }
   };
 
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Please select an image file.", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 10MB.", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingCover(true);
+    
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/cover.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast({ title: "Error", description: "Failed to upload cover photo.", variant: "destructive" });
+      setIsUploadingCover(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    await updateProfile({ cover_photo_url: data.publicUrl });
+    
+    setIsUploadingCover(false);
+    toast({ title: "Success", description: "Cover photo updated successfully." });
+  };
+
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -137,7 +219,15 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await updateProfile(formData);
+    
+    const updates: any = { ...formData };
+    
+    // Track if name changed for 30-day limit
+    if (formData.full_name !== profile?.full_name && canEditFullName) {
+      updates.full_name_updated_at = new Date().toISOString();
+    }
+    
+    const { error } = await updateProfile(updates);
     setIsSaving(false);
 
     if (error) {
@@ -162,19 +252,45 @@ const ProfilePage = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Profile Header */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {/* Cover */}
-          <div className="h-32 bg-gradient-to-r from-universe-blue via-universe-purple to-universe-cyan" />
+          {/* Cover Photo */}
+          <div className="relative h-32 sm:h-48 bg-gradient-to-r from-primary via-primary/80 to-primary/60">
+            {profile?.cover_photo_url && (
+              <img 
+                src={profile.cover_photo_url} 
+                alt="Cover" 
+                className="w-full h-full object-cover"
+              />
+            )}
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              disabled={isUploadingCover}
+              className="absolute bottom-3 right-3 p-2 bg-black/50 rounded-lg text-white hover:bg-black/70 transition-colors"
+            >
+              {isUploadingCover ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ImageIcon className="w-4 h-4" />
+              )}
+            </button>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverChange}
+              className="hidden"
+            />
+          </div>
           
           {/* Avatar & Info */}
-          <div className="px-6 pb-6">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12">
+          <div className="px-4 sm:px-6 pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16">
               <div className="relative">
-                <Avatar className="h-24 w-24 border-4 border-card">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-card">
                   <AvatarImage src={profile?.avatar_url || ""} />
-                  <AvatarFallback className="bg-gradient-to-br from-universe-blue to-universe-purple text-white text-2xl">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white text-2xl sm:text-3xl">
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
@@ -198,14 +314,17 @@ const ProfilePage = () => {
                 />
               </div>
               
-              <div className="flex-1 pt-4 sm:pt-0">
+              <div className="flex-1 pt-2 sm:pt-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl font-bold">{profile?.full_name || "User"}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold">{profile?.full_name || "User"}</h1>
                   {profile?.is_verified && (
-                    <BadgeCheck className="w-6 h-6 text-universe-cyan" />
+                    <BadgeCheck className="w-6 h-6 text-primary" />
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-2 text-muted-foreground flex-wrap">
+                {profile?.username && (
+                  <p className="text-muted-foreground">@{profile.username}</p>
+                )}
+                <div className="flex items-center gap-3 mt-2 text-muted-foreground flex-wrap text-sm">
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
                     {profile?.email}
@@ -260,9 +379,27 @@ const ProfilePage = () => {
                 <span className="w-2 h-2 bg-amber-500 rounded-full" />
               )}
             </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
+            {/* Edit Limits Warning */}
+            {isEditing && (!canEditFullName || !canEditUsername) && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-amber-500">Edit Restrictions</p>
+                  <p className="text-amber-500/80">
+                    {!canEditFullName && "Full name can only be changed once every 30 days. "}
+                    {!canEditUsername && "Username can only be changed once every 30 days."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Basic Info */}
             <div className="bg-card border border-border rounded-xl p-6 space-y-6">
               <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -272,12 +409,18 @@ const ProfilePage = () => {
               
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name" className="flex items-center gap-2">
+                    Full Name
+                    {!canEditFullName && (
+                      <Badge variant="secondary" className="text-xs">Locked</Badge>
+                    )}
+                  </Label>
                   {isEditing ? (
                     <Input
                       id="full_name"
                       value={formData.full_name}
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      disabled={!canEditFullName}
                     />
                   ) : (
                     <p className="text-muted-foreground">{profile?.full_name || "Not set"}</p>
@@ -367,7 +510,7 @@ const ProfilePage = () => {
                 
                 <div className="space-y-2">
                   <Label>Role</Label>
-                  <p className="text-muted-foreground capitalize">{profile?.role || "student"}</p>
+                  <p className="text-muted-foreground capitalize">{userRole || "student"}</p>
                 </div>
               </div>
             </div>
@@ -407,7 +550,7 @@ const ProfilePage = () => {
                     <div>
                       <p className="font-medium text-green-500">Your account is verified!</p>
                       <p className="text-sm text-muted-foreground">
-                        You have full access to all UniVerse features.
+                        You have full access to all Sympan features.
                       </p>
                     </div>
                   </div>
@@ -427,13 +570,13 @@ const ProfilePage = () => {
               ) : (
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    Verify your university affiliation to unlock full access to UniVerse and get a verified badge on your profile.
+                    Verify your university affiliation to unlock full access to Sympan and get a verified badge on your profile.
                   </p>
                   
                   <div className="bg-muted rounded-lg p-4 space-y-3">
-                    <h3 className="font-medium">Upload University ID</h3>
+                    <h3 className="font-medium">{getVerificationDocumentLabel()}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Upload a clear photo of your university ID card, enrollment letter, or any official document that shows your name and university.
+                      {getVerificationDocumentDescription()}
                     </p>
                     
                     <div
@@ -482,12 +625,16 @@ const ProfilePage = () => {
                   "View and review local services",
                 ].map((benefit) => (
                   <div key={benefit} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-universe-cyan flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
                     <span className="text-sm">{benefit}</span>
                   </div>
                 ))}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <AccountSettings />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { CreatePostCard } from "@/components/dashboard/CreatePostCard";
-import { PostCard } from "@/components/dashboard/PostCard";
+import { CreatePostCardInstagram } from "@/components/feed/CreatePostCardInstagram";
+import { InstagramPostCard } from "@/components/feed/InstagramPostCard";
+import { CommunityGroupsSection } from "@/components/community/CommunityGroupsSection";
 import { HousingTab } from "@/components/dashboard/HousingTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Grid3X3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   MessageSquare, 
@@ -16,6 +17,8 @@ import {
   BookOpen, 
   Users 
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface Post {
   id: string;
@@ -27,8 +30,10 @@ interface Post {
   user_id: string;
   image_url: string | null;
   tags: string[] | null;
+  group_id: string | null;
   author?: {
     full_name: string | null;
+    username: string | null;
     avatar_url: string | null;
     is_verified: boolean;
     role?: string;
@@ -44,17 +49,13 @@ const UniversityDashboard = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   // Validate slug matches user's university
   useEffect(() => {
     if (profile?.university) {
       const userSlug = (profile.university as any)?.slug;
       console.log("[UniversityDashboard] User slug:", userSlug, "Route slug:", slug);
-      
-      // For now, allow viewing - in future can restrict or show explore mode
-      if (userSlug && userSlug !== slug) {
-        console.log("[UniversityDashboard] Exploring other university");
-      }
     }
   }, [profile, slug, navigate]);
 
@@ -63,12 +64,18 @@ const UniversityDashboard = () => {
 
     setLoading(true);
 
-    const { data: postsData, error } = await supabase
+    let query = supabase
       .from("posts")
       .select("*")
       .eq("university_id", profile.university_id)
       .order("created_at", { ascending: false })
       .limit(50);
+
+    if (selectedGroupId) {
+      query = query.eq("group_id", selectedGroupId);
+    }
+
+    const { data: postsData, error } = await query;
 
     if (error) {
       console.error("Error fetching posts:", error);
@@ -84,7 +91,7 @@ const UniversityDashboard = () => {
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, is_verified")
+        .select("id, full_name, username, avatar_url, is_verified")
         .in("id", userIds);
 
       profiles?.forEach(p => {
@@ -125,25 +132,32 @@ const UniversityDashboard = () => {
   useEffect(() => {
     if (profile?.university_id) {
       fetchPosts();
-      console.log("[UniversityDashboard] Loaded for university:", profile.university?.name);
     }
-  }, [profile?.university_id]);
+  }, [profile?.university_id, selectedGroupId]);
 
   const universityName = (profile?.university as any)?.name || "Your University";
   const universityShortName = (profile?.university as any)?.short_name || slug?.toUpperCase();
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            {universityShortName} Community
-          </h1>
-          <p className="text-muted-foreground">
-            Welcome to {universityName}
-          </p>
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-primary" />
+              {universityShortName} Community
+            </h1>
+            <p className="text-muted-foreground">
+              Welcome to {universityName}
+            </p>
+          </div>
+          <Link to="/explore">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Grid3X3 className="w-4 h-4" />
+              Explore
+            </Button>
+          </Link>
         </div>
 
         {/* Tabs */}
@@ -172,31 +186,44 @@ const UniversityDashboard = () => {
           </TabsList>
 
           <TabsContent value="feed" className="space-y-6">
-            <CreatePostCard onPostCreated={fetchPosts} />
-            
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-12 space-y-3">
-                <p className="text-muted-foreground">No posts yet</p>
-                <p className="text-sm text-muted-foreground">
-                  Be the first to share something with your campus!
-                </p>
-              </div>
-            ) : (
+            <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+              {/* Sidebar - Groups */}
+              <aside className="hidden lg:block space-y-4">
+                <CommunityGroupsSection 
+                  selectedGroupId={selectedGroupId}
+                  onSelectGroup={setSelectedGroupId}
+                />
+              </aside>
+
+              {/* Main Feed */}
               <div className="space-y-4">
-                {posts.map(post => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    isLiked={userLikes.has(post.id)}
-                    onLikeToggle={fetchPosts}
-                  />
-                ))}
+                <CreatePostCardInstagram onPostCreated={fetchPosts} groupId={selectedGroupId || undefined} />
+                
+                {loading ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className="text-center py-12 space-y-3">
+                    <p className="text-muted-foreground">No posts yet</p>
+                    <p className="text-sm text-muted-foreground">
+                      Be the first to share something with your campus!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {posts.map(post => (
+                      <InstagramPostCard
+                        key={post.id}
+                        post={post}
+                        isLiked={userLikes.has(post.id)}
+                        onLikeToggle={fetchPosts}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </TabsContent>
 
           <TabsContent value="housing">
