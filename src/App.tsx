@@ -24,6 +24,12 @@ import TermsOfService from "./pages/legal/TermsOfService";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
+// LPU Campus Assist Pages
+import LPUCampusAssist from "./pages/lpu/LPUCampusAssist";
+import LPUEmergency from "./pages/lpu/LPUEmergency";
+import LPUHostels from "./pages/lpu/LPUHostels";
+import LPUHealthCentre from "./pages/lpu/LPUHealthCentre";
+import LPUCampusMap from "./pages/lpu/LPUCampusMap";
 
 const queryClient = new QueryClient();
 
@@ -38,13 +44,19 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/profile" element={<ProfilePage />} />
-            <Route path="/dashboard/community" element={<CommunityPage />} />
-            <Route path="/dashboard/messages" element={<MessagesPage />} />
-            <Route path="/dashboard/housing" element={<HousingPage />} />
-            <Route path="/dashboard/resources" element={<AcademicResourcesPage />} />
-            <Route path="/dashboard/services" element={<LocalServicesPage />} />
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/housing" element={<HousingPage />} />
+            <Route path="/academic-resources" element={<AcademicResourcesPage />} />
+            <Route path="/local-services" element={<LocalServicesPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            {/* LPU Campus Assist */}
+            <Route path="/lpu" element={<LPUCampusAssist />} />
+            <Route path="/lpu/emergency" element={<LPUEmergency />} />
+            <Route path="/lpu/hostels" element={<LPUHostels />} />
+            <Route path="/lpu/health-centre" element={<LPUHealthCentre />} />
+            <Route path="/lpu/map" element={<LPUCampusMap />} />
             {/* Public Pages */}
             <Route path="/about" element={<AboutPage />} />
             <Route path="/faq" element={<FAQPage />} />
