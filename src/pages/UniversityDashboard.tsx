@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CreatePostCard } from "@/components/dashboard/CreatePostCard";
 import { PostCard } from "@/components/dashboard/PostCard";
+import { HousingTab } from "@/components/dashboard/HousingTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -199,11 +200,7 @@ const UniversityDashboard = () => {
           </TabsContent>
 
           <TabsContent value="housing">
-            <div className="text-center py-12 text-muted-foreground">
-              <Home className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Housing listings coming soon</p>
-              <p className="text-sm mt-1">Find PGs, flats, and roommates near campus</p>
-            </div>
+            <HousingTab />
           </TabsContent>
 
           <TabsContent value="services">

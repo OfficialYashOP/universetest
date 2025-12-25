@@ -38,9 +38,11 @@ import {
   BookOpen,
   Eye,
   Loader2,
+  GraduationCap,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import lpuLogo from "@/assets/lpu-logo.png";
+import { UniversitiesTab } from "@/components/admin/UniversitiesTab";
 
 const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -331,7 +333,7 @@ const AdminDashboard = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="verifications" className="space-y-4">
-          <TabsList className="bg-muted">
+          <TabsList className="bg-muted flex-wrap">
             <TabsTrigger value="verifications">
               <BadgeCheck className="w-4 h-4 mr-2" />
               Verifications
@@ -343,6 +345,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="services">
               <Store className="w-4 h-4 mr-2" />
               Services
+            </TabsTrigger>
+            <TabsTrigger value="universities">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Universities
             </TabsTrigger>
           </TabsList>
 
@@ -552,6 +558,11 @@ const AdminDashboard = () => {
                 </Table>
               </div>
             )}
+          </TabsContent>
+
+          {/* Universities Tab */}
+          <TabsContent value="universities">
+            <UniversitiesTab />
           </TabsContent>
         </Tabs>
 
