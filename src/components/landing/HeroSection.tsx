@@ -45,7 +45,7 @@ const HeroSection = () => {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6"
           >
             Your Digital
-            <span className="block gradient-text">Campus Universe</span>
+            <span className="block gradient-text">Campus Community</span>
           </motion.h1>
 
           {/* Subheadline */}

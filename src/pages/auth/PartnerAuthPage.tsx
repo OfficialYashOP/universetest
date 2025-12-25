@@ -679,7 +679,7 @@ const PartnerAuthPage = () => {
           </motion.div>
           <h2 className="text-3xl font-bold mb-4">
             Grow Your Business with
-            <span className="block gradient-text">UniVerse Partners</span>
+            <span className="block gradient-text">Sympan Partners</span>
           </h2>
           <p className="text-muted-foreground max-w-sm">
             Reach verified university students. Post housing, jobs, 

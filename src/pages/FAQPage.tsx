@@ -62,7 +62,7 @@ const faqData: FAQCategory[] = [
   },
   {
     icon: Users,
-    title: "Using UniVerse",
+    title: "Using Sympan",
     items: [
       {
         question: "Can I talk to students from other universities?",
