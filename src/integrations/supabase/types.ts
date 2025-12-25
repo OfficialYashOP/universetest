@@ -1002,6 +1002,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_assign_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
+      get_health_staff_public: {
+        Args: never
+        Returns: {
+          created_at: string
+          designation: string
+          id: string
+          name: string
+          office_contact: string
+          role_type: string
+          specialization: string
+          timings: string
+          uid: string
+        }[]
+      }
       get_public_profile: {
         Args: { profile_id: string }
         Returns: {
