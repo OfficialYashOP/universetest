@@ -12,6 +12,8 @@ interface ProfileWithRole extends Profile {
     id: string;
     name: string;
     short_name: string | null;
+    logo_url: string | null;
+    location: string | null;
   };
 }
 
@@ -55,7 +57,7 @@ export const useProfile = () => {
       if (profileData?.university_id) {
         const { data: uniData } = await supabase
           .from("universities")
-          .select("id, name, short_name")
+          .select("id, name, short_name, logo_url, location")
           .eq("id", profileData.university_id)
           .maybeSingle();
         
