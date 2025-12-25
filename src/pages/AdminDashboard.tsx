@@ -349,6 +349,14 @@ const AdminDashboard = () => {
               <Users className="w-4 h-4 mr-2" />
               All Users
             </TabsTrigger>
+            <TabsTrigger value="partners">
+              <Store className="w-4 h-4 mr-2" />
+              Partners
+            </TabsTrigger>
+            <TabsTrigger value="accounts">
+              <ShieldCheck className="w-4 h-4 mr-2" />
+              Account Controls
+            </TabsTrigger>
             <TabsTrigger value="services">
               <Store className="w-4 h-4 mr-2" />
               Services
@@ -565,6 +573,16 @@ const AdminDashboard = () => {
                 </Table>
               </div>
             )}
+          </TabsContent>
+
+          {/* Partners Tab */}
+          <TabsContent value="partners">
+            <PartnersTab />
+          </TabsContent>
+
+          {/* Account Controls Tab */}
+          <TabsContent value="accounts">
+            <AccountControlsTab />
           </TabsContent>
 
           {/* Universities Tab */}

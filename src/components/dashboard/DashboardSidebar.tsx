@@ -12,7 +12,9 @@ import {
   Shield,
   MapPin,
   ShoppingBag,
-  Briefcase
+  Briefcase,
+  Compass,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +25,7 @@ import logo from "@/assets/logo.png";
 
 const navItems = [
   { icon: Home, label: "Feed", href: "/dashboard" },
+  { icon: Compass, label: "Explore", href: "/explore" },
   { icon: Users, label: "Community", href: "/community" },
   { icon: MessageSquare, label: "Messages", href: "/messages" },
   { icon: Building2, label: "Housing", href: "/housing" },
@@ -87,6 +90,22 @@ export const DashboardSidebar = () => {
         })}
       </nav>
 
+      {/* Incomplete Profile Warning */}
+      {profile && (!profile.full_name || !profile.bio || !profile.branch) && (
+        <div className="mx-4 mb-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-amber-500">Incomplete Profile</p>
+              <p className="text-xs text-amber-500/80">Complete your profile to unlock full experience</p>
+              <Link to="/profile" className="text-xs text-amber-500 underline mt-1 inline-block">
+                Complete now →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
         <Link
@@ -105,7 +124,9 @@ export const DashboardSidebar = () => {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{profile?.full_name || "User"}</p>
+            <p className="font-medium truncate">
+              {profile?.username ? `@${profile.username}` : profile?.full_name || "User"}
+            </p>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className={cn("text-xs capitalize", getRoleBadgeColor(profile?.role))}>
                 {profile?.role || "student"}
@@ -120,7 +141,7 @@ export const DashboardSidebar = () => {
         {/* Verification Status */}
         {!profile?.is_verified && (
           <Link
-            to="/dashboard/profile?tab=verification"
+            to="/profile?tab=verification"
             className="flex items-center gap-2 px-3 py-2 text-sm text-amber-400 bg-amber-400/10 rounded-lg hover:bg-amber-400/20 transition-colors"
           >
             <Shield className="w-4 h-4" />
