@@ -28,7 +28,7 @@ interface HealthStaff {
   uid: string | null;
   timings: string | null;
   office_contact: string | null;
-  personal_contact: string | null;
+  created_at: string;
 }
 
 interface HealthDirectory {
@@ -73,11 +73,15 @@ const LPUHealthCentre = () => {
 
   const fetchData = async () => {
     const [staffRes, dirRes] = await Promise.all([
-      supabase.from("lpu_health_staff").select("*").order("name"),
+      supabase.rpc("get_health_staff_public"),
       supabase.from("lpu_health_directory").select("*").order("department"),
     ]);
     
-    if (staffRes.data) setStaff(staffRes.data);
+    if (staffRes.data) {
+      // Sort by name client-side since RPC doesn't support .order()
+      const sortedStaff = [...staffRes.data].sort((a, b) => a.name.localeCompare(b.name));
+      setStaff(sortedStaff);
+    }
     if (dirRes.data) setDirectory(dirRes.data);
     setLoading(false);
   };
@@ -132,13 +136,7 @@ const LPUHealthCentre = () => {
             {person.office_contact && (
               <Button size="sm" onClick={() => handleCall(person.office_contact!)}>
                 <Phone className="w-4 h-4 mr-1" />
-                Office
-              </Button>
-            )}
-            {person.personal_contact && (
-              <Button size="sm" variant="outline" onClick={() => handleCall(person.personal_contact!)}>
-                <Phone className="w-4 h-4 mr-1" />
-                Personal
+                Call
               </Button>
             )}
           </div>
