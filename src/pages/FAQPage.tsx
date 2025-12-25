@@ -21,20 +21,20 @@ const faqData: FAQCategory[] = [
     title: "General",
     items: [
       {
-        question: "What is UniVerse?",
-        answer: "UniVerse is a university-exclusive social platform that connects verified students, seniors, alumni, and approved service providers. It's your digital campus for finding housing, sharing resources, connecting with mentors, and discovering trusted local services."
+        question: "What is Sympan?",
+        answer: "Sympan is a university-exclusive social platform that connects verified students, seniors, alumni, and approved service providers. It's your digital campus for finding housing, sharing resources, connecting with mentors, and discovering trusted local services."
       },
       {
-        question: "Who can join UniVerse?",
-        answer: "UniVerse is exclusively for verified university community members: current students, seniors, alumni, faculty/staff, and approved local service providers (like PG owners, restaurants, etc.). Everyone must complete verification to access the platform."
+        question: "Who can join Sympan?",
+        answer: "Sympan is exclusively for verified university community members: current students, seniors, alumni, faculty/staff, and approved local service providers (like PG owners, restaurants, etc.). Everyone must complete verification to access the platform."
       },
       {
-        question: "Is UniVerse free to use?",
-        answer: "Yes! UniVerse is completely free for students and university members. Service providers may have premium listing options in the future, but core features will always remain free for students."
+        question: "Is Sympan free to use?",
+        answer: "Yes! Sympan is completely free for students and university members. Service providers may have premium listing options in the future, but core features will always remain free for students."
       },
       {
         question: "Which universities are supported?",
-        answer: "We're currently live at Lovely Professional University (LPU). We plan to expand to more universities across India and globally. Want UniVerse at your university? Contact us!"
+        answer: "We're currently live at Lovely Professional University (LPU). We plan to expand to more universities across India and globally. Want Sympan at your university? Contact us!"
       }
     ]
   },
@@ -48,10 +48,10 @@ const faqData: FAQCategory[] = [
       },
       {
         question: "Why is verification required?",
-        answer: "Verification is the core of UniVerse's safety promise. By ensuring every member is a genuine university affiliate, we eliminate scammers, fake accounts, and bad actors. This creates a trusted community where you can safely connect and transact."
+        answer: "Verification is the core of Sympan's safety promise. By ensuring every member is a genuine university affiliate, we eliminate scammers, fake accounts, and bad actors. This creates a trusted community where you can safely connect and transact."
       },
       {
-        question: "How does UniVerse prevent scams?",
+        question: "How does Sympan prevent scams?",
         answer: "Multiple layers: 1) Mandatory verification for all users, 2) Verified badges for trusted members, 3) Community reporting system, 4) Active moderation team, 5) Review system for service providers. We take a zero-tolerance approach to fraud."
       },
       {
@@ -139,7 +139,7 @@ const FAQPage = () => {
           </div>
           <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about UniVerse. Can't find what you're looking for?{" "}
+            Find answers to common questions about Sympan. Can't find what you're looking for?{" "}
             <a href="/contact" className="text-primary hover:underline">Contact us</a>
           </p>
         </div>

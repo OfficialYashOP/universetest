@@ -56,11 +56,11 @@ const AboutPage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <img 
               src={logo} 
-              alt="UniVerse" 
+              alt="Sympan" 
               className="w-24 h-24 mx-auto rounded-2xl shadow-glow mb-8" 
             />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              About <span className="gradient-text">UniVerse</span>
+              About <span className="gradient-text">Sympan</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               The digital campus for verified students. A secure, scam-free ecosystem where 
@@ -76,10 +76,10 @@ const AboutPage = () => {
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center gap-3 mb-6">
               <GraduationCap className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-bold">What is UniVerse?</h2>
+              <h2 className="text-3xl font-bold">What is Sympan?</h2>
             </div>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              UniVerse is a university-exclusive social platform that brings together verified students, 
+              Sympan is a university-exclusive social platform that brings together verified students, 
               seniors, alumni, staff, and trusted local service providers. Think of it as your digital campus 
               — a single, trusted place for everything you need during your university journey.
             </p>
@@ -197,7 +197,7 @@ const AboutPage = () => {
                   <h3 className="text-2xl font-bold mb-2">Berlin</h3>
                   <p className="text-primary font-medium mb-3">Founder & Developer</p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Founded UniVerse to solve the fragmented communication and trust issues 
+                    Founded Sympan to solve the fragmented communication and trust issues 
                     in university communities. Building a secure, scam-free ecosystem where 
                     students can connect, collaborate, and thrive together.
                   </p>
@@ -220,7 +220,7 @@ const AboutPage = () => {
               Starting with Lovely Professional University
             </h2>
             <p className="text-muted-foreground mb-8">
-              We're launching UniVerse with LPU — one of India's largest private universities. 
+              We're launching Sympan with LPU — one of India's largest private universities. 
               Our goal is to perfect the platform here before expanding to universities across the country and beyond.
             </p>
             
@@ -254,7 +254,7 @@ const AboutPage = () => {
               University logos are trademarks of their respective institutions.
             </p>
             <p className="text-sm text-muted-foreground">
-              Want UniVerse at your university?{" "}
+              Want Sympan at your university?{" "}
               <a href="/contact" className="text-primary hover:underline">Get in touch</a>
             </p>
           </div>

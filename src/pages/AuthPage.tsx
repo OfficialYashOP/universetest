@@ -162,7 +162,7 @@ const AuthPage = () => {
       const slug = selectedUni?.slug || "lpu";
       
       toast({ 
-        title: "Welcome to UniVerse!", 
+        title: "Welcome to Sympan!", 
         description: "Your account has been created successfully.",
       });
       console.log("[AuthPage] Sign up success, redirecting to:", `/app/university/${slug}`);
@@ -242,11 +242,11 @@ const AuthPage = () => {
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
-          <span className="text-2xl font-bold gradient-text">UniVerse</span>
+          <img src={logo} alt="Sympan" className="h-12 w-12 rounded-xl" />
+          <span className="text-2xl font-bold gradient-text">Sympan</span>
         </div>
 
-        <h1 className="text-3xl font-bold mb-2">Welcome to UniVerse</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome to Sympan</h1>
         <p className="text-muted-foreground mb-8">Choose how you want to continue</p>
 
         <div className="space-y-4">

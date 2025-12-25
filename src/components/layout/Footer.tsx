@@ -30,8 +30,8 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-4">
-              <img src={logo} alt="UniVerse" className="h-10 w-10 rounded-xl" />
-              <span className="text-xl font-bold gradient-text">UniVerse</span>
+              <img src={logo} alt="Sympan" className="h-10 w-10 rounded-xl" />
+              <span className="text-xl font-bold gradient-text">Sympan</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
               The digital campus for verified students. Connect, learn, and grow together.
@@ -80,7 +80,7 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} UniVerse. All rights reserved.
+            © {new Date().getFullYear()} Sympan. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             Made with <Heart className="w-4 h-4 text-universe-pink fill-current" /> for students

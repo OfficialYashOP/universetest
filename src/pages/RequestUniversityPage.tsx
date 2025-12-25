@@ -51,15 +51,15 @@ const FAQ_ITEMS = [
   },
   {
     question: "Will I get notified when my university is added?",
-    answer: "Yes! We'll email you at the address you provide as soon as your university goes live on UniVerse."
+    answer: "Yes! We'll email you at the address you provide as soon as your university goes live on Sympan."
   },
   {
     question: "Do you need official university approval?",
     answer: "We work independently to verify users through student IDs and university emails. Official partnerships are welcome but not required for launch."
   },
   {
-    question: "What makes UniVerse different from other platforms?",
-    answer: "UniVerse is exclusively for verified university members. Every user goes through verification, ensuring a scam-free, trusted community."
+    question: "What makes Sympan different from other platforms?",
+    answer: "Sympan is exclusively for verified university members. Every user goes through verification, ensuring a scam-free, trusted community."
   }
 ];
 
@@ -361,7 +361,7 @@ const RequestUniversityPage = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="reason">Why do you want UniVerse at your university? (Optional)</Label>
+                  <Label htmlFor="reason">Why do you want Sympan at your university? (Optional)</Label>
                   <Textarea
                     id="reason"
                     value={formData.reason}
@@ -420,7 +420,7 @@ const RequestUniversityPage = () => {
                     onCheckedChange={(checked) => setConsents(prev => ({ ...prev, contact: !!checked }))}
                   />
                   <Label htmlFor="contact" className="text-sm text-muted-foreground cursor-pointer">
-                    I agree to be contacted by UniVerse regarding my university request.
+                    I agree to be contacted by Sympan regarding my university request.
                   </Label>
                 </div>
               </div>

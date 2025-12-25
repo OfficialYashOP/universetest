@@ -20,7 +20,7 @@ const CookiePolicy = () => {
         <div className="space-y-8">
           <section className="bg-card border border-border rounded-xl p-6">
             <p className="text-muted-foreground leading-relaxed">
-              UniVerse uses cookies and similar technologies to provide, protect, and improve our platform. 
+              Sympan uses cookies and similar technologies to provide, protect, and improve our platform. 
               This Cookie Policy explains what cookies are, how we use them, and your choices regarding cookies.
             </p>
           </section>
@@ -41,7 +41,7 @@ const CookiePolicy = () => {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold">How We Use Cookies</h2>
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <p className="text-muted-foreground mb-4">UniVerse uses cookies for the following purposes:</p>
+              <p className="text-muted-foreground mb-4">Sympan uses cookies for the following purposes:</p>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-4 p-4 bg-muted rounded-lg">
@@ -69,7 +69,7 @@ const CookiePolicy = () => {
                   <div>
                     <h3 className="font-semibold mb-1">Analytics & Performance</h3>
                     <p className="text-sm text-muted-foreground">
-                      Understand how users interact with UniVerse, identify issues, and improve our platform.
+                      Understand how users interact with Sympan, identify issues, and improve our platform.
                     </p>
                   </div>
                 </div>
@@ -140,7 +140,7 @@ const CookiePolicy = () => {
                     <h4 className="font-medium">Browser Settings</h4>
                     <p className="text-sm text-muted-foreground">
                       Most browsers allow you to block or delete cookies through settings. 
-                      Note that blocking essential cookies may prevent UniVerse from working properly.
+                      Note that blocking essential cookies may prevent Sympan from working properly.
                     </p>
                   </div>
                 </div>
@@ -150,7 +150,7 @@ const CookiePolicy = () => {
                   <div>
                     <h4 className="font-medium">Cookie Consent</h4>
                     <p className="text-sm text-muted-foreground">
-                      When you first visit UniVerse, you can choose which non-essential cookies to accept or decline.
+                      When you first visit Sympan, you can choose which non-essential cookies to accept or decline.
                     </p>
                   </div>
                 </div>
@@ -173,7 +173,7 @@ const CookiePolicy = () => {
             <h2 className="text-2xl font-bold">Cookie Consent Notice</h2>
             <div className="bg-card border border-border rounded-xl p-6">
               <p className="text-muted-foreground">
-                In compliance with GDPR and ePrivacy regulations, we display a cookie consent banner when you first visit UniVerse. 
+                In compliance with GDPR and ePrivacy regulations, we display a cookie consent banner when you first visit Sympan. 
                 You can manage your preferences at any time through your account settings or by clearing your browser cookies.
               </p>
             </div>
@@ -184,7 +184,7 @@ const CookiePolicy = () => {
             <h2 className="text-xl font-bold mb-3">Questions About Cookies?</h2>
             <p className="text-muted-foreground">
               If you have questions about our use of cookies, please contact us at{" "}
-              <a href="mailto:privacy@universe.app" className="text-primary hover:underline">privacy@universe.app</a>
+              <a href="mailto:privacy@sympan.app" className="text-primary hover:underline">privacy@sympan.app</a>
             </p>
           </section>
         </div>

@@ -20,8 +20,8 @@ const PrivacyPolicy = () => {
         <div className="prose prose-invert max-w-none space-y-8">
           <section className="bg-card border border-border rounded-xl p-6">
             <p className="text-muted-foreground leading-relaxed">
-              At UniVerse, your privacy is our priority. This Privacy Policy explains how we collect, 
-              use, protect, and share your personal information when you use our platform. By using UniVerse, 
+              At Sympan, your privacy is our priority. This Privacy Policy explains how we collect, 
+              use, protect, and share your personal information when you use our platform. By using Sympan, 
               you agree to the practices described in this policy.
             </p>
           </section>
@@ -132,7 +132,7 @@ const PrivacyPolicy = () => {
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
                 <p className="text-green-400 font-medium">
-                  UniVerse does NOT sell your personal data to third parties.
+                  Sympan does NOT sell your personal data to third parties.
                 </p>
               </div>
               
@@ -197,7 +197,7 @@ const PrivacyPolicy = () => {
             <h2 className="text-xl font-bold mb-3">Questions About Your Privacy?</h2>
             <p className="text-muted-foreground">
               If you have any questions about this Privacy Policy or how we handle your data, 
-              please contact us at <a href="mailto:privacy@universe.app" className="text-primary hover:underline">privacy@universe.app</a>
+              please contact us at <a href="mailto:privacy@sympan.app" className="text-primary hover:underline">privacy@sympan.app</a>
             </p>
           </section>
         </div>

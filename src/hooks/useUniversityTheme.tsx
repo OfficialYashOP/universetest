@@ -20,7 +20,7 @@ interface UniversityThemeContextType {
 
 const defaultTheme: UniversityTheme = {
   id: "",
-  name: "UniVerse",
+  name: "Sympan",
   shortName: null,
   slug: null,
   logoUrl: null,

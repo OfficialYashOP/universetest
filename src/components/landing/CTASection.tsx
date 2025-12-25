@@ -28,7 +28,7 @@ const CTASection = () => {
           >
             <img 
               src={logo} 
-              alt="UniVerse" 
+              alt="Sympan" 
               className="w-24 h-24 mx-auto rounded-2xl shadow-glow"
             />
           </motion.div>
