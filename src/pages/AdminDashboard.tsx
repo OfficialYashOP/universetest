@@ -43,6 +43,8 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import lpuLogo from "@/assets/lpu-logo.png";
 import { UniversitiesTab } from "@/components/admin/UniversitiesTab";
+import { PartnersTab } from "@/components/admin/PartnersTab";
+import { AccountControlsTab } from "@/components/admin/AccountControlsTab";
 
 const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,12 +64,17 @@ const AdminDashboard = () => {
         return;
       }
 
-      const { data, error } = await supabase.rpc("has_role", {
+      // Check for both staff and admin roles
+      const { data: staffData } = await supabase.rpc("has_role", {
         _user_id: user.id,
         _role: "staff",
       });
+      const { data: adminData } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
 
-      if (!error && data) {
+      if (staffData || adminData) {
         setIsAdmin(true);
       }
       setIsCheckingAdmin(false);
