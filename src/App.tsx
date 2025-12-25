@@ -20,6 +20,8 @@ import MessagesPage from "./pages/MessagesPage";
 import HousingPage from "./pages/HousingPage";
 import LocalServicesPage from "./pages/LocalServicesPage";
 import AcademicResourcesPage from "./pages/AcademicResourcesPage";
+import MarketplacePage from "./pages/MarketplacePage";
+import JobsPage from "./pages/JobsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
@@ -110,6 +112,16 @@ const App = () => (
               <Route path="/local-services" element={
                 <ProtectedRoute>
                   <LocalServicesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/marketplace" element={
+                <ProtectedRoute>
+                  <MarketplacePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/jobs" element={
+                <ProtectedRoute>
+                  <JobsPage />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={

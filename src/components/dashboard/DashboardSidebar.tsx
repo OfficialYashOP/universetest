@@ -10,7 +10,9 @@ import {
   LogOut,
   BadgeCheck,
   Shield,
-  MapPin
+  MapPin,
+  ShoppingBag,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +26,8 @@ const navItems = [
   { icon: Users, label: "Community", href: "/community" },
   { icon: MessageSquare, label: "Messages", href: "/messages" },
   { icon: Building2, label: "Housing", href: "/housing" },
+  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
+  { icon: Briefcase, label: "Jobs", href: "/jobs" },
   { icon: BookOpen, label: "Resources", href: "/academic-resources" },
   { icon: Store, label: "Services", href: "/local-services" },
   { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
