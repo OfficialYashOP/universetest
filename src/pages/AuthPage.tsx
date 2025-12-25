@@ -21,11 +21,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
+import UniversityLogo from "@/components/university/UniversityLogo";
 
 interface University {
   id: string;
   name: string;
   short_name: string | null;
+  logo_url: string | null;
 }
 
 const ROLES = [
@@ -69,7 +71,7 @@ const AuthPage = () => {
     const fetchUniversities = async () => {
       const { data, error } = await supabase
         .from("universities")
-        .select("id, name, short_name")
+        .select("id, name, short_name, logo_url")
         .eq("is_active", true)
         .order("name");
       
@@ -271,26 +273,39 @@ const AuthPage = () => {
                 <>
                   {/* University Selection */}
                   <div className="space-y-2">
-                    <Label htmlFor="university">Select Your University</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <select
-                        id="university"
-                        value={universityId}
-                        onChange={(e) => setUniversityId(e.target.value)}
-                        disabled={loadingUniversities}
-                        className="w-full h-12 pl-10 pr-4 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                      >
-                        <option value="">
-                          {loadingUniversities ? "Loading..." : "Choose university..."}
-                        </option>
+                    <Label>Select Your University</Label>
+                    {loadingUniversities ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-2">
                         {universities.map((uni) => (
-                          <option key={uni.id} value={uni.id}>
-                            {uni.name} {uni.short_name ? `(${uni.short_name})` : ""}
-                          </option>
+                          <button
+                            key={uni.id}
+                            type="button"
+                            onClick={() => setUniversityId(uni.id)}
+                            className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                              universityId === uni.id
+                                ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                                : "border-border hover:border-primary/50 hover:bg-muted"
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden p-1 flex-shrink-0">
+                              {uni.logo_url ? (
+                                <img src={uni.logo_url} alt={uni.name} className="w-full h-full object-contain" />
+                              ) : (
+                                <Building2 className="w-5 h-5 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="block text-sm font-medium truncate">{uni.short_name || uni.name}</span>
+                              <span className="block text-xs text-muted-foreground truncate">{uni.name}</span>
+                            </div>
+                          </button>
                         ))}
-                      </select>
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Full Name */}

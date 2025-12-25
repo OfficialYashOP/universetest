@@ -24,6 +24,7 @@ import TermsOfService from "./pages/legal/TermsOfService";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
+import RequestUniversityPage from "./pages/RequestUniversityPage";
 // LPU Campus Assist Pages
 import LPUCampusAssist from "./pages/lpu/LPUCampusAssist";
 import LPUEmergency from "./pages/lpu/LPUEmergency";
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/request-university" element={<RequestUniversityPage />} />
             {/* Legal Pages */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />

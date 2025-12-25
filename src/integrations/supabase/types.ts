@@ -715,6 +715,66 @@ export type Database = {
         }
         Relationships: []
       }
+      university_requests: {
+        Row: {
+          admin_notes: string | null
+          city: string
+          country: string
+          created_at: string
+          department: string | null
+          email: string
+          id: string
+          interest_count: string | null
+          name: string
+          phone: string | null
+          proof_file_url: string | null
+          reason: string | null
+          role: string
+          state: string
+          status: string
+          university_name: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          department?: string | null
+          email: string
+          id?: string
+          interest_count?: string | null
+          name: string
+          phone?: string | null
+          proof_file_url?: string | null
+          reason?: string | null
+          role: string
+          state: string
+          status?: string
+          university_name: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          department?: string | null
+          email?: string
+          id?: string
+          interest_count?: string | null
+          name?: string
+          phone?: string | null
+          proof_file_url?: string | null
+          reason?: string | null
+          role?: string
+          state?: string
+          status?: string
+          university_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

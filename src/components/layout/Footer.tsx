@@ -6,6 +6,7 @@ const footerLinks = {
   product: [
     { name: "Features", href: "/#features" },
     { name: "Universities", href: "/#universities" },
+    { name: "Request Your University", href: "/request-university" },
     { name: "FAQ", href: "/faq" },
   ],
   company: [

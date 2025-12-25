@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UniversityLogo from "@/components/university/UniversityLogo";
 import { 
   User, 
   Mail, 
@@ -204,18 +205,27 @@ const ProfilePage = () => {
                     <BadgeCheck className="w-6 h-6 text-universe-cyan" />
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-3 mt-2 text-muted-foreground flex-wrap">
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
                     {profile?.email}
                   </span>
-                  {profile?.university && (
-                    <span className="flex items-center gap-1">
-                      <Building2 className="w-4 h-4" />
-                      {profile.university.short_name || profile.university.name}
-                    </span>
-                  )}
                 </div>
+                {/* University Badge */}
+                {profile?.university && (
+                  <div className="flex items-center gap-2 mt-3 p-2 bg-muted rounded-lg w-fit">
+                    <UniversityLogo
+                      logoUrl={profile.university.logo_url}
+                      name={profile.university.name}
+                      shortName={profile.university.short_name || undefined}
+                      size="sm"
+                    />
+                    <div>
+                      <p className="text-sm font-medium">{profile.university.short_name || profile.university.name}</p>
+                      <p className="text-xs text-muted-foreground">{profile.university.location || "India"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <Button
