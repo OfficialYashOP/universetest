@@ -12,6 +12,8 @@ import {
   CheckCircle
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import UniversityLogo from "@/components/university/UniversityLogo";
+import { useUniversities } from "@/hooks/useUniversities";
 
 const values = [
   { icon: Shield, title: "Trust", desc: "Verification-first approach ensuring genuine university members only" },
@@ -40,6 +42,8 @@ const problems = [
 ];
 
 const AboutPage = () => {
+  const { data: universities } = useUniversities();
+  
   return (
     <PublicPageLayout>
       {/* Hero Section */}
@@ -218,6 +222,36 @@ const AboutPage = () => {
             <p className="text-muted-foreground mb-8">
               We're launching UniVerse with LPU — one of India's largest private universities. 
               Our goal is to perfect the platform here before expanding to universities across the country and beyond.
+            </p>
+            
+            {/* University Logos */}
+            <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
+              {universities?.map((uni) => (
+                <div 
+                  key={uni.id}
+                  className={`group flex flex-col items-center gap-2 p-4 rounded-xl transition-all ${
+                    uni.is_active 
+                      ? "bg-gradient-card border border-primary/30" 
+                      : "bg-card border border-border opacity-70"
+                  }`}
+                >
+                  <UniversityLogo
+                    logoUrl={uni.logo_url}
+                    name={uni.name}
+                    shortName={uni.short_name || undefined}
+                    size="lg"
+                    className="group-hover:scale-105 transition-transform"
+                  />
+                  <span className="text-sm font-medium">{uni.short_name || uni.name}</span>
+                  {uni.is_active && (
+                    <span className="text-xs text-primary">Live</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <p className="text-xs text-muted-foreground mb-4">
+              University logos are trademarks of their respective institutions.
             </p>
             <p className="text-sm text-muted-foreground">
               Want UniVerse at your university?{" "}
