@@ -9,7 +9,8 @@ import {
   User,
   LogOut,
   BadgeCheck,
-  Shield
+  Shield,
+  MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,11 +21,12 @@ import logo from "@/assets/logo.png";
 
 const navItems = [
   { icon: Home, label: "Feed", href: "/dashboard" },
-  { icon: Users, label: "Community", href: "/dashboard/community" },
-  { icon: MessageSquare, label: "Messages", href: "/dashboard/messages" },
-  { icon: Building2, label: "Housing", href: "/dashboard/housing" },
-  { icon: BookOpen, label: "Resources", href: "/dashboard/resources" },
-  { icon: Store, label: "Services", href: "/dashboard/services" },
+  { icon: Users, label: "Community", href: "/community" },
+  { icon: MessageSquare, label: "Messages", href: "/messages" },
+  { icon: Building2, label: "Housing", href: "/housing" },
+  { icon: BookOpen, label: "Resources", href: "/academic-resources" },
+  { icon: Store, label: "Services", href: "/local-services" },
+  { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
 ];
 
 export const DashboardSidebar = () => {
@@ -70,7 +72,8 @@ export const DashboardSidebar = () => {
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
                 isActive 
                   ? "bg-primary/10 text-primary" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                (item as any).highlight && !isActive && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
               )}
             >
               <item.icon className="w-5 h-5" />
@@ -83,10 +86,10 @@ export const DashboardSidebar = () => {
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
         <Link
-          to="/dashboard/profile"
+          to="/profile"
           className={cn(
             "flex items-center gap-3 p-3 rounded-lg transition-all",
-            location.pathname === "/dashboard/profile"
+            location.pathname === "/profile"
               ? "bg-primary/10"
               : "hover:bg-muted"
           )}
