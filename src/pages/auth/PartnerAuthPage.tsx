@@ -198,7 +198,7 @@ const PartnerAuthPage = () => {
       toast({ title: "Error", description: "Failed to create partner profile.", variant: "destructive" });
     } else {
       toast({ 
-        title: "Welcome to UniVerse Partners!", 
+        title: "Welcome to Sympan Partners!", 
         description: "Your application is pending approval. We'll notify you once approved.",
       });
       navigate("/partners/dashboard", { replace: true });
@@ -305,9 +305,9 @@ const PartnerAuthPage = () => {
 
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
+            <img src={logo} alt="Sympan" className="h-12 w-12 rounded-xl" />
             <div>
-              <span className="text-2xl font-bold gradient-text">UniVerse</span>
+              <span className="text-2xl font-bold gradient-text">Sympan</span>
               <p className="text-xs text-muted-foreground">Partners Portal</p>
             </div>
           </div>

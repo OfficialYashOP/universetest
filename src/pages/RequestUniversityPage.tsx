@@ -451,7 +451,7 @@ const RequestUniversityPage = () => {
       <section className="py-12 bg-card/50">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">Why UniVerse is Different</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">Why Sympan is Different</h2>
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="bg-card border border-border rounded-xl p-5 text-center">
                 <Shield className="w-8 h-8 text-primary mx-auto mb-3" />
