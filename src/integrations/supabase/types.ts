@@ -681,6 +681,7 @@ export type Database = {
       }
       universities: {
         Row: {
+          banner_url: string | null
           created_at: string | null
           domain: string | null
           id: string
@@ -689,9 +690,13 @@ export type Database = {
           logo_url: string | null
           name: string
           short_name: string | null
+          slug: string | null
+          theme_gradient: string | null
+          theme_primary: string | null
           updated_at: string | null
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string | null
           domain?: string | null
           id?: string
@@ -700,9 +705,13 @@ export type Database = {
           logo_url?: string | null
           name: string
           short_name?: string | null
+          slug?: string | null
+          theme_gradient?: string | null
+          theme_primary?: string | null
           updated_at?: string | null
         }
         Update: {
+          banner_url?: string | null
           created_at?: string | null
           domain?: string | null
           id?: string
@@ -711,6 +720,9 @@ export type Database = {
           logo_url?: string | null
           name?: string
           short_name?: string | null
+          slug?: string | null
+          theme_gradient?: string | null
+          theme_primary?: string | null
           updated_at?: string | null
         }
         Relationships: []
