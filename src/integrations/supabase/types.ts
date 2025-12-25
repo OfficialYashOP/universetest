@@ -1009,6 +1009,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_request_rate_limit: {
+        Args: { submitter_email: string }
+        Returns: boolean
+      }
       get_health_staff_public: {
         Args: never
         Returns: {
