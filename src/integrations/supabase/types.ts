@@ -14,16 +14,455 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      academic_resources: {
+        Row: {
+          condition: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          price: number | null
+          resource_type: string
+          status: Database["public"]["Enums"]["listing_status"] | null
+          subject: string | null
+          title: string
+          university_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price?: number | null
+          resource_type: string
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          subject?: string | null
+          title: string
+          university_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price?: number | null
+          resource_type?: string
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          subject?: string | null
+          title?: string
+          university_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_resources_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      housing_listings: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          gender_preference: string | null
+          id: string
+          images: string[] | null
+          is_verified: boolean | null
+          listing_type: string
+          location: string | null
+          price: number | null
+          room_type: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          gender_preference?: string | null
+          id?: string
+          images?: string[] | null
+          is_verified?: boolean | null
+          listing_type: string
+          location?: string | null
+          price?: number | null
+          room_type?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title: string
+          university_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          gender_preference?: string | null
+          id?: string
+          images?: string[] | null
+          is_verified?: boolean | null
+          listing_type?: string
+          location?: string | null
+          price?: number | null
+          room_type?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          title?: string
+          university_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "housing_listings_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      local_services: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          is_admin_approved: boolean | null
+          is_verified: boolean | null
+          name: string
+          phone: string | null
+          rating: number | null
+          reviews_count: number | null
+          university_id: string
+          updated_at: string | null
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_admin_approved?: boolean | null
+          is_verified?: boolean | null
+          name: string
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          university_id: string
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_admin_approved?: boolean | null
+          is_verified?: boolean | null
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          university_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_services_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_anonymous: boolean | null
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          comments_count: number | null
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          is_anonymous: boolean | null
+          likes_count: number | null
+          tags: string[] | null
+          university_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number | null
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          likes_count?: number | null
+          tags?: string[] | null
+          university_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          likes_count?: number | null
+          tags?: string[] | null
+          university_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          branch: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_verified: boolean | null
+          phone: string | null
+          roll_number: string | null
+          university_id: string | null
+          updated_at: string | null
+          verification_document_url: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          year_of_study: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          branch?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          is_verified?: boolean | null
+          phone?: string | null
+          roll_number?: string | null
+          university_id?: string | null
+          updated_at?: string | null
+          verification_document_url?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          year_of_study?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          branch?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_verified?: boolean | null
+          phone?: string | null
+          roll_number?: string | null
+          university_id?: string | null
+          updated_at?: string | null
+          verification_document_url?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          year_of_study?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      universities: {
+        Row: {
+          created_at: string | null
+          domain: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          short_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          short_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          short_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_university: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "senior" | "alumni" | "staff" | "service_provider"
+      listing_status: "active" | "inactive" | "sold" | "rented"
+      verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +589,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "senior", "alumni", "staff", "service_provider"],
+      listing_status: ["active", "inactive", "sold", "rented"],
+      verification_status: ["pending", "verified", "rejected"],
+    },
   },
 } as const
