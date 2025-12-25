@@ -72,7 +72,7 @@ const FeaturesSection = () => {
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             From finding your perfect roommate to connecting with alumni mentors, 
-            UniVerse has everything to make campus life easier.
+            Sympan has everything to make campus life easier.
           </p>
         </motion.div>
 

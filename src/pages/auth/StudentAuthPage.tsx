@@ -583,7 +583,7 @@ const StudentAuthPage = () => {
         <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center">
           <motion.img
             src={logo}
-            alt="UniVerse"
+            alt="Sympan"
             className="w-32 h-32 rounded-3xl shadow-glow mb-8"
             animate={{ y: [0, -10, 0] }}
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
