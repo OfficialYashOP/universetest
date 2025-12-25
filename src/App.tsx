@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
+import CommunityPage from "./pages/CommunityPage";
+import MessagesPage from "./pages/MessagesPage";
+import HousingPage from "./pages/HousingPage";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import CareersPage from "./pages/CareersPage";
@@ -33,9 +36,9 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
-            <Route path="/dashboard/community" element={<Dashboard />} />
-            <Route path="/dashboard/messages" element={<Dashboard />} />
-            <Route path="/dashboard/housing" element={<Dashboard />} />
+            <Route path="/dashboard/community" element={<CommunityPage />} />
+            <Route path="/dashboard/messages" element={<MessagesPage />} />
+            <Route path="/dashboard/housing" element={<HousingPage />} />
             <Route path="/dashboard/resources" element={<Dashboard />} />
             <Route path="/dashboard/services" element={<Dashboard />} />
             {/* Public Pages */}
