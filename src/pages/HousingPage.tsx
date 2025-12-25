@@ -116,30 +116,38 @@ const HousingPage = () => {
 
       setLoading(true);
       
+      // Use security definer function to prevent contact_phone exposure
       const { data, error } = await supabase
-        .from("housing_listings")
-        .select("*")
-        .eq("university_id", profile.university_id)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
+        .rpc("get_housing_listings_safe", { university_filter: profile.university_id });
 
       if (error) {
         console.error("Error fetching listings:", error);
         setLoading(false);
         return;
       }
+      
+      // Filter for active listings only (function returns all statuses)
+      const activeListings = (data || []).filter((l: any) => l.status === "active");
 
-      // Fetch owner profiles
-      const userIds = [...new Set(data?.map(l => l.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url, is_verified")
-        .in("id", userIds);
-
+      // Fetch owner profiles using public profile function
+      const userIds = [...new Set(activeListings?.map((l: any) => l.user_id) || [])];
       const profilesMap: Record<string, any> = {};
-      profiles?.forEach(p => profilesMap[p.id] = p);
+      
+      // Fetch each profile individually using the safe function
+      for (const userId of userIds) {
+        const { data: profileData } = await supabase
+          .rpc("get_public_profile", { profile_id: userId });
+        if (profileData && profileData[0]) {
+          profilesMap[userId] = profileData[0];
+        }
+      }
 
-      setListings(data?.map(l => ({ ...l, owner: profilesMap[l.user_id] })) || []);
+      // Sort by created_at descending
+      const sortedListings = activeListings.sort((a: any, b: any) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setListings(sortedListings?.map((l: any) => ({ ...l, owner: profilesMap[l.user_id] })) || []);
       setLoading(false);
     };
 
