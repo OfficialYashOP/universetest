@@ -4,9 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { UniversityThemeProvider } from "@/hooks/useUniversityTheme";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+// Pages
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
+import VerifyPage from "./pages/VerifyPage";
+import SelectUniversityPage from "./pages/SelectUniversityPage";
 import Dashboard from "./pages/Dashboard";
+import UniversityDashboard from "./pages/UniversityDashboard";
 import ProfilePage from "./pages/ProfilePage";
 import CommunityPage from "./pages/CommunityPage";
 import MessagesPage from "./pages/MessagesPage";
@@ -25,6 +32,7 @@ import CookiePolicy from "./pages/legal/CookiePolicy";
 import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
 import RequestUniversityPage from "./pages/RequestUniversityPage";
+
 // LPU Campus Assist Pages
 import LPUCampusAssist from "./pages/lpu/LPUCampusAssist";
 import LPUEmergency from "./pages/lpu/LPUEmergency";
@@ -37,43 +45,111 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/housing" element={<HousingPage />} />
-            <Route path="/academic-resources" element={<AcademicResourcesPage />} />
-            <Route path="/local-services" element={<LocalServicesPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            {/* LPU Campus Assist */}
-            <Route path="/lpu" element={<LPUCampusAssist />} />
-            <Route path="/lpu/emergency" element={<LPUEmergency />} />
-            <Route path="/lpu/hostels" element={<LPUHostels />} />
-            <Route path="/lpu/health-centre" element={<LPUHealthCentre />} />
-            <Route path="/lpu/map" element={<LPUCampusMap />} />
-            {/* Public Pages */}
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/careers" element={<CareersPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/request-university" element={<RequestUniversityPage />} />
-            {/* Legal Pages */}
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/cookies" element={<CookiePolicy />} />
-            <Route path="/disclaimer" element={<LegalDisclaimer />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <UniversityThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/verify" element={<VerifyPage />} />
+              <Route path="/select-university" element={<SelectUniversityPage />} />
+              
+              {/* Protected App Routes */}
+              <Route path="/app/university/:slug" element={
+                <ProtectedRoute>
+                  <UniversityDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/community" element={
+                <ProtectedRoute>
+                  <CommunityPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/messages" element={
+                <ProtectedRoute>
+                  <MessagesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/housing" element={
+                <ProtectedRoute>
+                  <HousingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/academic-resources" element={
+                <ProtectedRoute>
+                  <AcademicResourcesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/local-services" element={
+                <ProtectedRoute>
+                  <LocalServicesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* LPU Campus Assist (Protected) */}
+              <Route path="/lpu" element={
+                <ProtectedRoute>
+                  <LPUCampusAssist />
+                </ProtectedRoute>
+              } />
+              <Route path="/lpu/emergency" element={
+                <ProtectedRoute>
+                  <LPUEmergency />
+                </ProtectedRoute>
+              } />
+              <Route path="/lpu/hostels" element={
+                <ProtectedRoute>
+                  <LPUHostels />
+                </ProtectedRoute>
+              } />
+              <Route path="/lpu/health-centre" element={
+                <ProtectedRoute>
+                  <LPUHealthCentre />
+                </ProtectedRoute>
+              } />
+              <Route path="/lpu/map" element={
+                <ProtectedRoute>
+                  <LPUCampusMap />
+                </ProtectedRoute>
+              } />
+              
+              {/* Public Pages */}
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/request-university" element={<RequestUniversityPage />} />
+              
+              {/* Legal Pages */}
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/disclaimer" element={<LegalDisclaimer />} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </UniversityThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

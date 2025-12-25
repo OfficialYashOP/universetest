@@ -28,6 +28,7 @@ interface University {
   name: string;
   short_name: string | null;
   logo_url: string | null;
+  slug: string | null;
 }
 
 const ROLES = [
@@ -59,11 +60,35 @@ const AuthPage = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loadingUniversities, setLoadingUniversities] = useState(true);
 
-  // Redirect if already logged in
+  // Redirect if already logged in - go to university dashboard
   useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
+    const redirectUser = async () => {
+      if (user) {
+        // Fetch user's university to get slug
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("university_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        if (profileData?.university_id) {
+          const { data: uniData } = await supabase
+            .from("universities")
+            .select("slug")
+            .eq("id", profileData.university_id)
+            .maybeSingle();
+          
+          const slug = uniData?.slug || "lpu";
+          console.log("[AuthPage] User logged in, redirecting to:", `/app/university/${slug}`);
+          navigate(`/app/university/${slug}`, { replace: true });
+        } else {
+          console.log("[AuthPage] User has no university, redirecting to select");
+          navigate("/select-university", { replace: true });
+        }
+      }
+    };
+    
+    redirectUser();
   }, [user, navigate]);
 
   // Fetch universities
@@ -71,7 +96,7 @@ const AuthPage = () => {
     const fetchUniversities = async () => {
       const { data, error } = await supabase
         .from("universities")
-        .select("id, name, short_name, logo_url")
+        .select("id, name, short_name, logo_url, slug")
         .eq("is_active", true)
         .order("name");
       
@@ -132,11 +157,16 @@ const AuthPage = () => {
       }
       toast({ title: "Sign Up Failed", description: message, variant: "destructive" });
     } else {
+      // Find the selected university's slug
+      const selectedUni = universities.find(u => u.id === universityId);
+      const slug = selectedUni?.slug || "lpu";
+      
       toast({ 
         title: "Welcome to UniVerse!", 
         description: "Your account has been created successfully.",
       });
-      navigate("/");
+      console.log("[AuthPage] Sign up success, redirecting to:", `/app/university/${slug}`);
+      navigate(`/app/university/${slug}`, { replace: true });
     }
   };
 
@@ -166,7 +196,7 @@ const AuthPage = () => {
       toast({ title: "Sign In Failed", description: message, variant: "destructive" });
     } else {
       toast({ title: "Welcome back!", description: "You have been signed in successfully." });
-      navigate("/");
+      // Redirect will happen via the useEffect when user state updates
     }
   };
 
