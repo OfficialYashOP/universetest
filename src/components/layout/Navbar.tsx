@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
-  { name: "Features", href: "#features" },
-  { name: "Universities", href: "#universities" },
-  { name: "Community", href: "#community" },
-  { name: "About", href: "#about" },
+  { name: "Community", href: "/community" },
+  { name: "Housing", href: "/housing" },
+  { name: "Resources", href: "/academic-resources" },
+  { name: "About", href: "/about" },
 ];
 
 const Navbar = () => {
@@ -36,13 +36,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -82,14 +82,14 @@ const Navbar = () => {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   onClick={() => setIsOpen(false)}
                   className="text-muted-foreground hover:text-foreground transition-colors py-2 text-base font-medium"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
