@@ -9,7 +9,7 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    metadata: { full_name: string; university_id: string; role: string }
+    metadata: { full_name: string; university_id: string; role: string; username?: string }
   ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (
     email: string,
     password: string,
-    metadata: { full_name: string; university_id: string; role: string }
+    metadata: { full_name: string; university_id: string; role: string; username?: string }
   ) => {
     const redirectUrl = `${window.location.origin}/`;
     

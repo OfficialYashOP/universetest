@@ -70,6 +70,57 @@ export type Database = {
           },
         ]
       }
+      admin_seeds: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
+      community_groups: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -710,6 +761,7 @@ export type Database = {
           comments_count: number | null
           content: string
           created_at: string | null
+          group_id: string | null
           id: string
           image_url: string | null
           is_anonymous: boolean | null
@@ -723,6 +775,7 @@ export type Database = {
           comments_count?: number | null
           content: string
           created_at?: string | null
+          group_id?: string | null
           id?: string
           image_url?: string | null
           is_anonymous?: boolean | null
@@ -736,6 +789,7 @@ export type Database = {
           comments_count?: number | null
           content?: string
           created_at?: string | null
+          group_id?: string | null
           id?: string
           image_url?: string | null
           is_anonymous?: boolean | null
@@ -747,6 +801,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "posts_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
@@ -757,18 +818,27 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           avatar_url: string | null
           bio: string | null
           branch: string | null
+          cover_photo_url: string | null
           created_at: string | null
           email: string
           full_name: string | null
+          full_name_updated_at: string | null
           id: string
+          instagram_link: string | null
+          is_active: boolean | null
           is_verified: boolean | null
           phone: string | null
+          recovery_email: string | null
           roll_number: string | null
+          snapchat_link: string | null
           university_id: string | null
           updated_at: string | null
+          username: string | null
+          username_updated_at: string | null
           verification_document_url: string | null
           verification_status:
             | Database["public"]["Enums"]["verification_status"]
@@ -776,18 +846,27 @@ export type Database = {
           year_of_study: string | null
         }
         Insert: {
+          account_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           branch?: string | null
+          cover_photo_url?: string | null
           created_at?: string | null
           email: string
           full_name?: string | null
+          full_name_updated_at?: string | null
           id: string
+          instagram_link?: string | null
+          is_active?: boolean | null
           is_verified?: boolean | null
           phone?: string | null
+          recovery_email?: string | null
           roll_number?: string | null
+          snapchat_link?: string | null
           university_id?: string | null
           updated_at?: string | null
+          username?: string | null
+          username_updated_at?: string | null
           verification_document_url?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
@@ -795,18 +874,27 @@ export type Database = {
           year_of_study?: string | null
         }
         Update: {
+          account_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           branch?: string | null
+          cover_photo_url?: string | null
           created_at?: string | null
           email?: string
           full_name?: string | null
+          full_name_updated_at?: string | null
           id?: string
+          instagram_link?: string | null
+          is_active?: boolean | null
           is_verified?: boolean | null
           phone?: string | null
+          recovery_email?: string | null
           roll_number?: string | null
+          snapchat_link?: string | null
           university_id?: string | null
           updated_at?: string | null
+          username?: string | null
+          username_updated_at?: string | null
           verification_document_url?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
@@ -1009,8 +1097,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      can_edit_profile_field: {
+        Args: { field_name: string; user_id: string }
+        Returns: boolean
+      }
       check_request_rate_limit: {
         Args: { submitter_email: string }
+        Returns: boolean
+      }
+      check_username_available: {
+        Args: { check_username: string }
         Returns: boolean
       }
       get_health_staff_public: {
@@ -1088,6 +1184,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_account_active: { Args: { user_id: string }; Returns: boolean }
       is_conversation_participant: {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean
@@ -1101,6 +1198,7 @@ export type Database = {
         | "staff"
         | "service_provider"
         | "partner_vendor"
+        | "admin"
       listing_status: "active" | "inactive" | "sold" | "rented"
       verification_status: "pending" | "verified" | "rejected"
     }
@@ -1237,6 +1335,7 @@ export const Constants = {
         "staff",
         "service_provider",
         "partner_vendor",
+        "admin",
       ],
       listing_status: ["active", "inactive", "sold", "rented"],
       verification_status: ["pending", "verified", "rejected"],

@@ -43,7 +43,6 @@ const resourceTypes = [
   { value: "textbook", label: "Textbooks", icon: BookOpen },
   { value: "notes", label: "Notes", icon: FileText },
   { value: "assignments", label: "Assignments", icon: Notebook },
-  { value: "calculator", label: "Calculators", icon: Calculator },
   { value: "other", label: "Other", icon: GraduationCap },
 ];
 
