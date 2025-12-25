@@ -179,8 +179,58 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Starting Point */}
+      {/* Founder Section */}
       <section className="py-16 bg-card/50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">Meet the Founder</h2>
+            <div className="bg-gradient-to-br from-universe-blue/10 to-universe-purple/10 border border-border rounded-xl p-8">
+              <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-universe-blue to-universe-purple flex items-center justify-center text-3xl font-bold text-white flex-shrink-0">
+                  YP
+                </div>
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl font-bold mb-2">Yash Pandey</h3>
+                  <p className="text-primary font-medium mb-3">Founder & Developer</p>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    A B.Tech Computer Science student at Lovely Professional University with a passion for 
+                    Cyber Security and Software Development. Skilled in Java, Python, JavaScript, and Cloud Platforms, 
+                    Yash founded UniVerse to solve the fragmented communication and trust issues 
+                    in university communities.
+                  </p>
+                  <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <a 
+                      href="https://linkedin.com/in/yashpandeyofficial007" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2 text-sm hover:bg-muted/80 transition-colors"
+                    >
+                      LinkedIn
+                    </a>
+                    <a 
+                      href="https://github.com/OfficialYashOp" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2 text-sm hover:bg-muted/80 transition-colors"
+                    >
+                      GitHub
+                    </a>
+                    <a 
+                      href="mailto:Pandey97828@gmail.com"
+                      className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2 text-sm hover:bg-muted/80 transition-colors"
+                    >
+                      Email
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Starting Point */}
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
