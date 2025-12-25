@@ -276,6 +276,192 @@ export type Database = {
           },
         ]
       }
+      lpu_campus_locations: {
+        Row: {
+          block_number: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          map_x: number | null
+          map_y: number | null
+          name: string
+          phone_landline: string | null
+          phone_mobile: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          block_number?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          map_x?: number | null
+          map_y?: number | null
+          name: string
+          phone_landline?: string | null
+          phone_mobile?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          block_number?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          map_x?: number | null
+          map_y?: number | null
+          name?: string
+          phone_landline?: string | null
+          phone_mobile?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      lpu_emergency_contacts: {
+        Row: {
+          availability: string | null
+          category: string
+          contact_name: string | null
+          created_at: string | null
+          department: string | null
+          email: string | null
+          id: string
+          is_sos: boolean | null
+          landline: string[] | null
+          mobile: string | null
+          priority: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: string | null
+          category: string
+          contact_name?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id?: string
+          is_sos?: boolean | null
+          landline?: string[] | null
+          mobile?: string | null
+          priority?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: string | null
+          category?: string
+          contact_name?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id?: string
+          is_sos?: boolean | null
+          landline?: string[] | null
+          mobile?: string | null
+          priority?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      lpu_health_directory: {
+        Row: {
+          created_at: string | null
+          department: string
+          id: string
+          phone_numbers: string[]
+        }
+        Insert: {
+          created_at?: string | null
+          department: string
+          id?: string
+          phone_numbers: string[]
+        }
+        Update: {
+          created_at?: string | null
+          department?: string
+          id?: string
+          phone_numbers?: string[]
+        }
+        Relationships: []
+      }
+      lpu_health_staff: {
+        Row: {
+          created_at: string | null
+          designation: string | null
+          id: string
+          name: string
+          office_contact: string | null
+          personal_contact: string | null
+          role_type: string
+          specialization: string | null
+          timings: string | null
+          uid: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          designation?: string | null
+          id?: string
+          name: string
+          office_contact?: string | null
+          personal_contact?: string | null
+          role_type: string
+          specialization?: string | null
+          timings?: string | null
+          uid?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          designation?: string | null
+          id?: string
+          name?: string
+          office_contact?: string | null
+          personal_contact?: string | null
+          role_type?: string
+          specialization?: string | null
+          timings?: string | null
+          uid?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      lpu_hostel_contacts: {
+        Row: {
+          availability: string | null
+          block: string | null
+          created_at: string | null
+          hostel_name: string
+          hostel_type: string
+          id: string
+          landline: string | null
+          mobile: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: string | null
+          block?: string | null
+          created_at?: string | null
+          hostel_name: string
+          hostel_type: string
+          id?: string
+          landline?: string | null
+          mobile?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: string | null
+          block?: string | null
+          created_at?: string | null
+          hostel_name?: string
+          hostel_type?: string
+          id?: string
+          landline?: string | null
+          mobile?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
