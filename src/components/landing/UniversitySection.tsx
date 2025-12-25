@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { MapPin, Users, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
+import lpuLogo from "@/assets/lpu-logo.png";
 const universities = [
   {
     name: "Lovely Professional University",
@@ -86,8 +86,12 @@ const UniversitySection = () => {
                 )}
                 
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-muted-foreground" />
+                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center overflow-hidden">
+                    {uni.shortName === "LPU" ? (
+                      <img src={lpuLogo} alt="LPU" className="w-10 h-10 object-contain" />
+                    ) : (
+                      <Building2 className="w-6 h-6 text-muted-foreground" />
+                    )}
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{uni.shortName}</h3>
