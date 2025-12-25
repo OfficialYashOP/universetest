@@ -114,12 +114,9 @@ export const HousingTab = () => {
 
       setLoading(true);
 
+      // Use the safe function that hides contact_phone from non-owners
       const { data, error } = await supabase
-        .from("housing_listings")
-        .select("*")
-        .eq("university_id", profile.university_id)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
+        .rpc("get_housing_listings_safe", { university_filter: profile.university_id });
 
       if (error) {
         console.error("Error fetching listings:", error);
@@ -127,20 +124,22 @@ export const HousingTab = () => {
         return;
       }
 
-      const userIds = [...new Set(data?.map((l) => l.user_id) || [])];
+      // Filter for active listings and sort by created_at
+      const activeListings = (data || [])
+        .filter((l: any) => l.status === "active")
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      const userIds = [...new Set(activeListings.map((l: any) => l.user_id))];
       let profilesMap: Record<string, any> = {};
 
       if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, full_name, avatar_url, is_verified")
-          .in("id", userIds);
+        const { data: profiles } = await supabase.rpc("get_public_profiles");
 
-        profiles?.forEach((p) => (profilesMap[p.id] = p));
+        profiles?.forEach((p: any) => (profilesMap[p.id] = p));
       }
 
       setListings(
-        data?.map((l) => ({ ...l, owner: profilesMap[l.user_id] })) || []
+        activeListings.map((l: any) => ({ ...l, owner: profilesMap[l.user_id] })) || []
       );
       setLoading(false);
     };

@@ -1027,6 +1027,31 @@ export type Database = {
           uid: string
         }[]
       }
+      get_housing_listings_safe: {
+        Args: { university_filter: string }
+        Returns: {
+          address: string
+          amenities: string[]
+          contact_phone: string
+          created_at: string
+          description: string
+          gender_preference: string
+          id: string
+          images: string[]
+          is_vendor_listing: boolean
+          is_verified: boolean
+          listing_type: string
+          location: string
+          partner_id: string
+          price: number
+          room_type: string
+          status: Database["public"]["Enums"]["listing_status"]
+          title: string
+          university_id: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_public_profile: {
         Args: { profile_id: string }
         Returns: {
