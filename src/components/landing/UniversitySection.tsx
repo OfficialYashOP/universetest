@@ -1,41 +1,14 @@
 import { motion } from "framer-motion";
-import { MapPin, Users, Building2, ArrowRight } from "lucide-react";
+import { MapPin, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import lpuLogo from "@/assets/lpu-logo.png";
-const universities = [
-  {
-    name: "Lovely Professional University",
-    shortName: "LPU",
-    location: "Phagwara, Punjab",
-    students: "2,500+",
-    verified: true,
-    featured: true,
-  },
-  {
-    name: "Delhi University",
-    shortName: "DU",
-    location: "Delhi",
-    students: "Coming Soon",
-    verified: false,
-  },
-  {
-    name: "IIT Delhi",
-    shortName: "IITD",
-    location: "Delhi",
-    students: "Coming Soon",
-    verified: false,
-  },
-  {
-    name: "BITS Pilani",
-    shortName: "BITS",
-    location: "Pilani, Rajasthan",
-    students: "Coming Soon",
-    verified: false,
-  },
-];
+import UniversityLogo from "@/components/university/UniversityLogo";
+import { useUniversities } from "@/hooks/useUniversities";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const UniversitySection = () => {
+  const { data: universities, isLoading } = useUniversities();
+
   return (
     <section id="universities" className="py-24 relative overflow-hidden">
       {/* Background Gradient */}
@@ -64,65 +37,95 @@ const UniversitySection = () => {
 
         {/* Universities Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {universities.map((uni, index) => (
-            <motion.div
-              key={uni.shortName}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div 
-                className={`relative h-full p-6 rounded-2xl border transition-all duration-300 hover-lift ${
-                  uni.featured 
-                    ? "bg-gradient-card border-primary/30 shadow-glow" 
-                    : "bg-card border-border opacity-70"
-                }`}
-              >
-                {uni.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-primary text-xs font-medium text-primary-foreground">
-                    Now Live
-                  </div>
-                )}
-                
+          {isLoading ? (
+            // Loading skeletons
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="p-6 rounded-2xl border bg-card">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center overflow-hidden">
-                    {uni.shortName === "LPU" ? (
-                      <img src={lpuLogo} alt="LPU" className="w-10 h-10 object-contain" />
-                    ) : (
-                      <Building2 className="w-6 h-6 text-muted-foreground" />
-                    )}
-                  </div>
+                  <Skeleton className="w-12 h-12 rounded-xl" />
                   <div>
-                    <h3 className="font-semibold text-lg">{uni.shortName}</h3>
-                    <p className="text-sm text-muted-foreground truncate max-w-[120px]">{uni.name}</p>
+                    <Skeleton className="h-5 w-16 mb-1" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span>{uni.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users className="w-4 h-4 text-universe-cyan" />
-                    <span className={uni.verified ? "text-foreground font-medium" : "text-muted-foreground"}>
-                      {uni.students}
-                    </span>
-                  </div>
-                </div>
-
-                {uni.featured && (
-                  <Link to="/auth?mode=signup" className="block mt-4">
-                    <Button variant="hero" size="sm" className="w-full">
-                      Join LPU Community
-                    </Button>
-                  </Link>
-                )}
+                <Skeleton className="h-4 w-32 mb-2" />
+                <Skeleton className="h-4 w-24" />
               </div>
-            </motion.div>
-          ))}
+            ))
+          ) : (
+            universities?.map((uni, index) => (
+              <motion.div
+                key={uni.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div 
+                  className={`group relative h-full p-6 rounded-2xl border transition-all duration-300 hover-lift ${
+                    uni.is_active 
+                      ? "bg-gradient-card border-primary/30 shadow-glow" 
+                      : "bg-card border-border hover:border-border/80"
+                  }`}
+                >
+                  {uni.is_active && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-primary text-xs font-medium text-primary-foreground">
+                      Now Live
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-3 mb-4">
+                    <UniversityLogo
+                      logoUrl={uni.logo_url}
+                      name={uni.name}
+                      shortName={uni.short_name || undefined}
+                      size="md"
+                      className="transition-transform group-hover:scale-105"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-lg">{uni.short_name || uni.name}</h3>
+                      <p className="text-sm text-muted-foreground truncate max-w-[120px]" title={uni.name}>
+                        {uni.name}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span>{uni.location || "India"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="w-4 h-4 text-universe-cyan flex-shrink-0" />
+                      <span className={uni.is_active ? "text-foreground font-medium" : "text-muted-foreground"}>
+                        {uni.is_active ? "2,500+ Students" : "Coming Soon"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {uni.is_active ? (
+                    <Link to="/auth?mode=signup" className="block mt-4">
+                      <Button variant="hero" size="sm" className="w-full">
+                        Join {uni.short_name || "Community"}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div className="mt-4 text-center">
+                      <span className="text-xs text-muted-foreground">
+                        Launching soon
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
+
+        {/* Trademark Disclaimer */}
+        <p className="text-center text-xs text-muted-foreground mb-8">
+          University logos are trademarks of their respective institutions.
+        </p>
 
         {/* Request University CTA */}
         <motion.div
