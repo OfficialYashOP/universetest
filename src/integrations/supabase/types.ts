@@ -999,52 +999,37 @@ export type Database = {
       }
     }
     Views: {
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          branch: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string | null
-          is_verified: boolean | null
-          university_id: string | null
-          year_of_study: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          branch?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          university_id?: string | null
-          year_of_study?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          branch?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          university_id?: string | null
-          year_of_study?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_university_id_fkey"
-            columns: ["university_id"]
-            isOneToOne: false
-            referencedRelation: "universities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_public_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          branch: string
+          created_at: string
+          full_name: string
+          id: string
+          is_verified: boolean
+          university_id: string
+          year_of_study: string
+        }[]
+      }
+      get_public_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          branch: string
+          created_at: string
+          full_name: string
+          id: string
+          is_verified: boolean
+          university_id: string
+          year_of_study: string
+        }[]
+      }
       get_user_university: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
