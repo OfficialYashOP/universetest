@@ -334,8 +334,8 @@ const PartnerDashboard = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/partners" className="flex items-center gap-2">
-            <img src={logo} alt="UniVerse" className="h-8 w-8 rounded-lg" />
-            <span className="font-bold gradient-text">UniVerse Partners</span>
+            <img src={logo} alt="Sympan" className="h-8 w-8 rounded-lg" />
+            <span className="font-bold gradient-text">Sympan Partners</span>
           </Link>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />

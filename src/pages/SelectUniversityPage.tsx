@@ -97,8 +97,8 @@ const SelectUniversityPage = () => {
       >
         {/* Logo */}
         <div className="flex items-center justify-center gap-3">
-          <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
-          <span className="text-2xl font-bold gradient-text">UniVerse</span>
+          <img src={logo} alt="Sympan" className="h-12 w-12 rounded-xl" />
+          <span className="text-2xl font-bold gradient-text">Sympan</span>
         </div>
 
         {/* Header */}

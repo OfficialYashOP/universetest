@@ -19,7 +19,7 @@ const categories = [
   "Housing",
   "Academics",
   "Career",
-  "UniVerse Updates"
+  "Sympan Updates"
 ];
 
 const blogPosts = [
@@ -29,7 +29,7 @@ const blogPosts = [
     title: "The Ultimate Guide to Finding a PG Near Campus",
     excerpt: "Everything you need to know about finding safe, affordable accommodation near your university. From verification to negotiations.",
     category: "Housing",
-    author: "UniVerse Team",
+    author: "Sympan Team",
     date: "December 20, 2024",
     readTime: "5 min read",
     featured: true
@@ -38,9 +38,9 @@ const blogPosts = [
     id: "2",
     slug: "how-to-avoid-rental-scams",
     title: "How to Avoid Rental Scams: A Student's Guide",
-    excerpt: "Learn the red flags to watch for and how UniVerse helps you find verified, scam-free housing options.",
+    excerpt: "Learn the red flags to watch for and how Sympan helps you find verified, scam-free housing options.",
     category: "Housing",
-    author: "UniVerse Team",
+    author: "Sympan Team",
     date: "December 18, 2024",
     readTime: "4 min read",
     featured: false
@@ -51,7 +51,7 @@ const blogPosts = [
     title: "Exam Preparation Tips from University Toppers",
     excerpt: "We interviewed top performers across universities. Here are their secrets to effective exam preparation.",
     category: "Academics",
-    author: "UniVerse Team",
+    author: "Sympan Team",
     date: "December 15, 2024",
     readTime: "7 min read",
     featured: false
@@ -62,17 +62,17 @@ const blogPosts = [
     title: "Building Your Professional Network While in University",
     excerpt: "Start networking early. Learn how to connect with alumni, seniors, and industry professionals effectively.",
     category: "Career",
-    author: "UniVerse Team",
+    author: "Sympan Team",
     date: "December 12, 2024",
     readTime: "6 min read",
     featured: false
   },
   {
     id: "5",
-    slug: "welcome-to-universe",
-    title: "Welcome to UniVerse: Our Vision for Campus Communities",
-    excerpt: "Introducing UniVerse — the trusted platform for verified university students. Learn about our mission and features.",
-    category: "UniVerse Updates",
+    slug: "welcome-to-sympan",
+    title: "Welcome to Sympan: Our Vision for Campus Communities",
+    excerpt: "Introducing Sympan — the trusted platform for verified university students. Learn about our mission and features.",
+    category: "Sympan Updates",
     author: "Founders",
     date: "December 10, 2024",
     readTime: "3 min read",
@@ -84,7 +84,7 @@ const blogPosts = [
     title: "Managing Your Finances as a University Student",
     excerpt: "Practical tips for budgeting, saving, and making the most of your limited student income.",
     category: "Student Life",
-    author: "UniVerse Team",
+    author: "Sympan Team",
     date: "December 8, 2024",
     readTime: "5 min read",
     featured: false
@@ -112,7 +112,7 @@ const BlogPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-bold mb-4">UniVerse Blog</h1>
+          <h1 className="text-4xl font-bold mb-4">Sympan Blog</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Tips, guides, and insights for university life. From housing to careers, 
             we've got you covered.

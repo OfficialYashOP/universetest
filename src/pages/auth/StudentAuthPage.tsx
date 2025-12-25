@@ -158,7 +158,7 @@ const StudentAuthPage = () => {
       const slug = selectedUni?.slug || "lpu";
       
       toast({ 
-        title: "Welcome to UniVerse!", 
+        title: "Welcome to Sympan!", 
         description: "Your account has been created successfully.",
       });
       navigate(`/app/university/${slug}`, { replace: true });
@@ -238,9 +238,9 @@ const StudentAuthPage = () => {
 
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <img src={logo} alt="UniVerse" className="h-12 w-12 rounded-xl" />
+            <img src={logo} alt="Sympan" className="h-12 w-12 rounded-xl" />
             <div>
-              <span className="text-2xl font-bold gradient-text">UniVerse</span>
+              <span className="text-2xl font-bold gradient-text">Sympan</span>
               <p className="text-xs text-muted-foreground">Student Community</p>
             </div>
           </div>

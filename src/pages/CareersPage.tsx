@@ -42,7 +42,7 @@ const openRoles = [
     title: "Campus Ambassador",
     type: "Part-time / Internship",
     location: "On Campus",
-    description: "Represent UniVerse at your university, onboard students, and grow our community."
+    description: "Represent Sympan at your university, onboard students, and grow our community."
   },
 ];
 
@@ -83,7 +83,7 @@ const CareersPage = () => {
       <section className="py-16 bg-card/50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Why Join UniVerse?</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Why Join Sympan?</h2>
             
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {perks.map((perk) => (
@@ -201,10 +201,10 @@ const CareersPage = () => {
             <h2 className="text-3xl font-bold mb-4">Don't See Your Role?</h2>
             <p className="text-muted-foreground mb-8">
               We're always looking for talented, passionate people. Send us your resume and tell us 
-              how you'd like to contribute to UniVerse.
+              how you'd like to contribute to Sympan.
             </p>
             <a 
-              href="mailto:careers@universe.app"
+              href="mailto:careers@sympan.app"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               Send Your Resume

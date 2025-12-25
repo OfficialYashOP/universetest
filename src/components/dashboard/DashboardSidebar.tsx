@@ -57,8 +57,8 @@ export const DashboardSidebar = () => {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <Link to="/dashboard" className="flex items-center gap-3">
-          <img src={logo} alt="UniVerse" className="h-10 w-10 rounded-lg" />
-          <span className="text-xl font-bold gradient-text">UniVerse</span>
+          <img src={logo} alt="Sympan" className="h-10 w-10 rounded-lg" />
+          <span className="text-xl font-bold gradient-text">Sympan</span>
         </Link>
       </div>
 

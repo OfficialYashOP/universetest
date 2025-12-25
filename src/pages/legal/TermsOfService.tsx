@@ -99,8 +99,8 @@ const TermsOfService = () => {
               <div>
                 <h3 className="font-semibold mb-2">Your Content</h3>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>You retain ownership of all content you create and post on UniVerse</li>
-                  <li>You grant UniVerse a limited license to display, distribute, and promote your content on our platform</li>
+                  <li>You retain ownership of all content you create and post on Sympan</li>
+                  <li>You grant Sympan a limited license to display, distribute, and promote your content on our platform</li>
                   <li>You are responsible for ensuring you have the rights to share any content you post</li>
                 </ul>
               </div>

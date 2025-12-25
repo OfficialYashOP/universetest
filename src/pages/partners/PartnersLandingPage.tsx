@@ -72,8 +72,8 @@ const PartnersLandingPage = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="UniVerse" className="h-8 w-8 rounded-lg" />
-            <span className="font-bold gradient-text">UniVerse Partners</span>
+            <img src={logo} alt="Sympan" className="h-8 w-8 rounded-lg" />
+            <span className="font-bold gradient-text">Sympan Partners</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/auth/partner?mode=login">
@@ -101,7 +101,7 @@ const PartnersLandingPage = () => {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
               <Briefcase className="w-4 h-4 text-primary" />
-              <span className="text-sm text-primary font-medium">UniVerse Partners Program</span>
+              <span className="text-sm text-primary font-medium">Sympan Partners Program</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -110,7 +110,7 @@ const PartnersLandingPage = () => {
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Partner with UniVerse to promote your housing, jobs, and services 
+              Partner with Sympan to promote your housing, jobs, and services 
               directly to verified university students across India.
             </p>
             
@@ -140,7 +140,7 @@ const PartnersLandingPage = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">Why Partner with UniVerse?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Partner with Sympan?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Join hundreds of businesses reaching verified students through our trusted platform.
             </p>
@@ -269,7 +269,7 @@ const PartnersLandingPage = () => {
           >
             <h2 className="text-3xl font-bold mb-4">Ready to Grow Your Business?</h2>
             <p className="text-muted-foreground mb-8">
-              Join UniVerse Partners today and start reaching verified students.
+              Join Sympan Partners today and start reaching verified students.
             </p>
             <Link to="/auth/partner?mode=signup">
               <Button variant="hero" size="lg" className="gap-2">
@@ -285,8 +285,8 @@ const PartnersLandingPage = () => {
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="UniVerse" className="h-6 w-6 rounded" />
-            <span className="text-sm text-muted-foreground">© 2024 UniVerse Partners</span>
+            <img src={logo} alt="Sympan" className="h-6 w-6 rounded" />
+            <span className="text-sm text-muted-foreground">© 2024 Sympan Partners</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link to="/terms" className="hover:text-foreground">Terms</Link>
