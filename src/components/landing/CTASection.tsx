@@ -56,16 +56,16 @@ const CTASection = () => {
           {/* Features List */}
           <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-universe-cyan" />
-              Free Forever
+              <span className="w-1.5 h-1.5 rounded-full bg-universe-blue" />
+              Verified Students Only
             </span>
             <span className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-universe-purple" />
-              No Credit Card
+              Secure & Private
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-universe-blue" />
-              Verified Students Only
+              <span className="w-1.5 h-1.5 rounded-full bg-universe-cyan" />
+              Campus Community
             </span>
           </div>
         </motion.div>
