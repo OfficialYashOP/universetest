@@ -23,6 +23,7 @@ import AcademicResourcesPage from "./pages/AcademicResourcesPage";
 import MarketplacePage from "./pages/MarketplacePage";
 import JobsPage from "./pages/JobsPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import ExplorePage from "./pages/ExplorePage";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import CareersPage from "./pages/CareersPage";
@@ -122,6 +123,11 @@ const App = () => (
               <Route path="/jobs" element={
                 <ProtectedRoute>
                   <JobsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/explore" element={
+                <ProtectedRoute>
+                  <ExplorePage />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
