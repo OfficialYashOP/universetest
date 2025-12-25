@@ -11,6 +11,9 @@ import ProfilePage from "./pages/ProfilePage";
 import CommunityPage from "./pages/CommunityPage";
 import MessagesPage from "./pages/MessagesPage";
 import HousingPage from "./pages/HousingPage";
+import LocalServicesPage from "./pages/LocalServicesPage";
+import AcademicResourcesPage from "./pages/AcademicResourcesPage";
+import AdminDashboard from "./pages/AdminDashboard";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import CareersPage from "./pages/CareersPage";
@@ -39,8 +42,9 @@ const App = () => (
             <Route path="/dashboard/community" element={<CommunityPage />} />
             <Route path="/dashboard/messages" element={<MessagesPage />} />
             <Route path="/dashboard/housing" element={<HousingPage />} />
-            <Route path="/dashboard/resources" element={<Dashboard />} />
-            <Route path="/dashboard/services" element={<Dashboard />} />
+            <Route path="/dashboard/resources" element={<AcademicResourcesPage />} />
+            <Route path="/dashboard/services" element={<LocalServicesPage />} />
+            <Route path="/dashboard/admin" element={<AdminDashboard />} />
             {/* Public Pages */}
             <Route path="/about" element={<AboutPage />} />
             <Route path="/faq" element={<FAQPage />} />
