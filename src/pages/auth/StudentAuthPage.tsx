@@ -12,7 +12,10 @@ import {
   Building2,
   BadgeCheck,
   ArrowRight,
-  Loader2
+  Loader2,
+  AtSign,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +56,9 @@ const StudentAuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const [universityId, setUniversityId] = useState("");
   const [role, setRole] = useState("");
   
@@ -113,11 +119,46 @@ const StudentAuthPage = () => {
     fetchUniversities();
   }, [toast]);
 
+  // Check username availability
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (!username || username.length < 3) {
+        setUsernameAvailable(null);
+        return;
+      }
+      
+      // Validate format
+      if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+        setUsernameAvailable(false);
+        return;
+      }
+      
+      setCheckingUsername(true);
+      const { data, error } = await supabase.rpc("check_username_available", {
+        check_username: username.toLowerCase()
+      });
+      
+      setCheckingUsername(false);
+      setUsernameAvailable(error ? null : data);
+    };
+
+    const debounce = setTimeout(checkUsername, 500);
+    return () => clearTimeout(debounce);
+  }, [username]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!fullName.trim()) {
       toast({ title: "Error", description: "Please enter your full name.", variant: "destructive" });
+      return;
+    }
+    if (!username.trim() || !/^[a-z0-9_]{3,30}$/.test(username)) {
+      toast({ title: "Error", description: "Please enter a valid username (3-30 chars, lowercase, numbers, underscores).", variant: "destructive" });
+      return;
+    }
+    if (!usernameAvailable) {
+      toast({ title: "Error", description: "This username is not available.", variant: "destructive" });
       return;
     }
     if (!universityId) {
@@ -143,6 +184,7 @@ const StudentAuthPage = () => {
       full_name: fullName.trim(),
       university_id: universityId,
       role: role,
+      username: username.toLowerCase(),
     });
     
     setIsLoading(false);
