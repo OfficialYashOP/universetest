@@ -39,6 +39,7 @@ import RequestUniversityPage from "./pages/RequestUniversityPage";
 // Auth Pages
 import StudentAuthPage from "./pages/auth/StudentAuthPage";
 import PartnerAuthPage from "./pages/auth/PartnerAuthPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 // Partner Pages
 import PartnersLandingPage from "./pages/partners/PartnersLandingPage";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/auth/student" element={<StudentAuthPage />} />
               <Route path="/auth/partner" element={<PartnerAuthPage />} />
+              <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/verify" element={<VerifyPage />} />
               <Route path="/select-university" element={<SelectUniversityPage />} />
               

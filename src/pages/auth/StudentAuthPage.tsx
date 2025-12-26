@@ -24,6 +24,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface University {
   id: string;
@@ -61,6 +68,11 @@ const StudentAuthPage = () => {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [universityId, setUniversityId] = useState("");
   const [role, setRole] = useState("");
+  
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [sendingReset, setSendingReset] = useState(false);
   
   // Universities
   const [universities, setUniversities] = useState<University[]>([]);
@@ -236,6 +248,34 @@ const StudentAuthPage = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail.trim()) {
+      toast({ title: "Error", description: "Please enter your email address.", variant: "destructive" });
+      return;
+    }
+    
+    setSendingReset(true);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    
+    setSendingReset(false);
+    
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ 
+        title: "Reset link sent!", 
+        description: "Check your email for a password reset link.",
+      });
+      setShowForgotPassword(false);
+      setResetEmail("");
+    }
+  };
+
   const handleNextStep = () => {
     if (step === 1) {
       if (!universityId) {
@@ -265,6 +305,7 @@ const StudentAuthPage = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen flex">
       {/* Left Panel - Form */}
       <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12">
@@ -576,9 +617,19 @@ const StudentAuthPage = () => {
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetEmail(email);
+                        setShowForgotPassword(true);
+                      }}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
 
-                  <Button 
+                  <Button
                     type="submit" 
                     variant="hero" 
                     size="lg" 
@@ -656,6 +707,51 @@ const StudentAuthPage = () => {
         </div>
       </div>
     </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="h-12 pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="hero" disabled={sendingReset}>
+                {sendingReset ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Send Reset Link"
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
