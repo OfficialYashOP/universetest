@@ -1109,6 +1109,22 @@ export type Database = {
         Args: { check_username: string }
         Returns: boolean
       }
+      get_admin_profiles_filtered: {
+        Args: { search_term?: string }
+        Returns: {
+          account_status: string
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          university_id: string
+          verification_document_url: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
+        }[]
+      }
       get_health_staff_public: {
         Args: never
         Returns: {

@@ -36,20 +36,16 @@ export const AccountControlsTab = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-account-controls", searchTerm],
     queryFn: async () => {
-      let query = supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (searchTerm) {
-        query = query.or(
-          `full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,username.ilike.%${searchTerm}%`
-        );
-      }
-
-      const { data, error } = await query.limit(50);
+      // Use secure RPC function that excludes sensitive personal data (phone, social links, etc.)
+      const { data, error } = await supabase
+        .rpc("get_admin_profiles_filtered", { search_term: searchTerm || null });
+      
       if (error) throw error;
-      return data;
+      
+      // Sort by created_at descending and limit to 50
+      return (data || [])
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 50);
     },
   });
 
@@ -180,9 +176,6 @@ export const AccountControlsTab = () => {
                     </Avatar>
                     <div>
                       <span className="font-medium block">{user.full_name || "Unknown"}</span>
-                      {user.username && (
-                        <span className="text-xs text-muted-foreground">@{user.username}</span>
-                      )}
                     </div>
                   </div>
                 </TableCell>
