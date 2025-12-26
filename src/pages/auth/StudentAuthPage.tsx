@@ -483,7 +483,44 @@ const StudentAuthPage = () => {
                     <p className="text-xs text-muted-foreground">At least 6 characters</p>
                   </div>
 
-                  <Button 
+                  {/* Username */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Choose a Username</Label>
+                    <div className="relative">
+                      <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="your_username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                        className="h-12 pl-10 pr-10"
+                        maxLength={30}
+                      />
+                      {username.length >= 3 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          ) : usernameAvailable ? (
+                            <Check className="w-5 h-5 text-green-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="w-5 h-5 text-destructive" />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {username.length < 3 
+                        ? "3-30 characters, lowercase letters, numbers, and underscores only"
+                        : usernameAvailable 
+                          ? "Username is available!" 
+                          : usernameAvailable === false 
+                            ? "Username is taken or invalid"
+                            : "Checking availability..."}
+                    </p>
+                  </div>
+
+                  <Button
                     type="submit" 
                     variant="hero" 
                     size="lg" 
