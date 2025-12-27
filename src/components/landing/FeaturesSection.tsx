@@ -43,8 +43,8 @@ const features = [
   },
   {
     icon: Shield,
-    title: "Verified Network",
-    description: "Every user is verified — ensuring a safe, scam-free community you can trust.",
+    title: "Trusted Network",
+    description: "A secure community where every user is part of your university ecosystem.",
     color: "universe-purple",
   },
 ];

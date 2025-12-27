@@ -59,7 +59,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "What makes Sympan different from other platforms?",
-    answer: "Sympan is exclusively for verified university members. Every user goes through verification, ensuring a scam-free, trusted community."
+    answer: "Sympan is exclusively for university members. Every user is part of the campus ecosystem, ensuring a trusted community."
   }
 ];
 

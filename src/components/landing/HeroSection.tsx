@@ -55,8 +55,8 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
           >
-            Connect with verified students, find housing, discover local services, 
-            and build lifelong connections — all in one secure, scam-free platform.
+            Connect with your campus community, find housing, discover local services, 
+            and build lifelong connections — all in one trusted platform.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -91,7 +91,7 @@ const HeroSection = () => {
               <div className="p-2 rounded-lg bg-universe-purple/10">
                 <Shield className="w-5 h-5 text-universe-purple" />
               </div>
-              <span className="text-sm">Verified Students Only</span>
+              <span className="text-sm">Trusted Community</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <div className="p-2 rounded-lg bg-universe-blue/10">

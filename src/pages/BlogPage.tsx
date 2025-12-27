@@ -36,9 +36,9 @@ const blogPosts = [
   },
   {
     id: "2",
-    slug: "how-to-avoid-rental-scams",
-    title: "How to Avoid Rental Scams: A Student's Guide",
-    excerpt: "Learn the red flags to watch for and how Sympan helps you find verified, scam-free housing options.",
+    slug: "how-to-find-safe-housing",
+    title: "Finding Safe Housing: A Student's Guide",
+    excerpt: "Learn the red flags to watch for and how Sympan helps you find trusted housing options near campus.",
     category: "Housing",
     author: "Sympan Team",
     date: "December 18, 2024",
