@@ -6,21 +6,19 @@ import {
   Building2, 
   BookOpen, 
   Store, 
-  User,
   LogOut,
   BadgeCheck,
-  Shield,
   MapPin,
   ShoppingBag,
   Briefcase,
-  Compass,
-  AlertCircle
+  Compass
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -36,10 +34,18 @@ const navItems = [
   { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
 ];
 
-export const DashboardSidebar = () => {
+interface DashboardSidebarProps {
+  onNavigate?: () => void;
+}
+
+export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { profile } = useProfile();
+
+  const handleNavClick = () => {
+    onNavigate?.();
+  };
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -57,9 +63,9 @@ export const DashboardSidebar = () => {
 
   return (
     <aside className="w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col fixed left-0 top-0">
-      {/* Logo */}
-      <div className="p-6 border-b border-sidebar-border">
-        <Link to="/dashboard" className="flex items-center gap-3">
+      {/* Logo - Hidden on mobile since we have header */}
+      <div className="p-6 border-b border-sidebar-border hidden lg:block">
+        <Link to="/dashboard" className="flex items-center gap-3" onClick={handleNavClick}>
           <img src={logo} alt="Sympan" className="h-10 w-10 rounded-lg" />
           <span className="text-xl font-bold gradient-text">Sympan</span>
         </Link>
@@ -75,6 +81,7 @@ export const DashboardSidebar = () => {
             <Link
               key={item.href}
               to={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
                 isActive 
@@ -93,8 +100,14 @@ export const DashboardSidebar = () => {
 
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
+        {/* Theme Toggle - Only show on desktop */}
+        <div className="hidden lg:flex justify-end mb-2">
+          <ThemeToggle variant="minimal" />
+        </div>
+        
         <Link
           to="/profile"
+          onClick={handleNavClick}
           className={cn(
             "flex items-center gap-3 p-3 rounded-lg transition-all",
             location.pathname === "/profile"
@@ -123,9 +136,11 @@ export const DashboardSidebar = () => {
           </div>
         </Link>
 
-
         <button
-          onClick={signOut}
+          onClick={() => {
+            signOut();
+            handleNavClick();
+          }}
           className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
         >
           <LogOut className="w-5 h-5" />
