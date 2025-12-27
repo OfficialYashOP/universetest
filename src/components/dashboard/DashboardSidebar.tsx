@@ -90,21 +90,6 @@ export const DashboardSidebar = () => {
         })}
       </nav>
 
-      {/* Incomplete Profile Warning */}
-      {profile && (!profile.full_name || !profile.bio || !profile.branch) && (
-        <div className="mx-4 mb-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-medium text-amber-500">Incomplete Profile</p>
-              <p className="text-xs text-amber-500/80">Complete your profile to unlock full experience</p>
-              <Link to="/profile" className="text-xs text-amber-500 underline mt-1 inline-block">
-                Complete now →
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
