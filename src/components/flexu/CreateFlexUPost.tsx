@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
-import { Image, Video, Send, X, Loader2, Plus } from "lucide-react";
+import { Image, Link, Send, X, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +14,11 @@ interface CreateFlexUPostProps {
   onPostCreated?: () => void;
 }
 
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+
+// Regex to validate video URLs (YouTube, Vimeo, etc.)
+const VIDEO_URL_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/|dailymotion\.com\/video\/|tiktok\.com\/@[\w.-]+\/video\/|instagram\.com\/(p|reel)\/|twitter\.com\/\w+\/status\/|x\.com\/\w+\/status\/)/i;
+
 export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
   const { profile } = useProfile();
   const { user } = useAuth();
@@ -19,64 +26,64 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
   
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [mediaTab, setMediaTab] = useState<"image" | "video">("image");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
-  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-
-    if (!isImage && !isVideo) {
+    if (!file.type.startsWith("image/")) {
       toast({ 
         title: "Error", 
-        description: "Please select an image or video file.", 
+        description: "Please select an image file (JPG, PNG, GIF, WebP).", 
         variant: "destructive" 
       });
       return;
     }
 
-    // 10MB limit for images, 50MB for videos
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > MAX_IMAGE_SIZE) {
       toast({ 
-        title: "Error", 
-        description: `File must be less than ${isVideo ? "50MB" : "10MB"}.`, 
+        title: "Image too large", 
+        description: "Image must be less than 4MB. Please compress or resize your image.", 
         variant: "destructive" 
       });
       return;
     }
 
-    setSelectedMedia(file);
-    setMediaType(isImage ? "image" : "video");
+    setSelectedImage(file);
+    setVideoUrl("");
     
     const reader = new FileReader();
     reader.onloadend = () => {
-      setMediaPreview(reader.result as string);
+      setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
 
-  const removeMedia = () => {
-    setSelectedMedia(null);
-    setMediaPreview(null);
-    setMediaType(null);
-    if (mediaInputRef.current) {
-      mediaInputRef.current.value = "";
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
   };
 
-  const uploadMedia = async (file: File): Promise<string | null> => {
+  const validateVideoUrl = (url: string): boolean => {
+    if (!url.trim()) return false;
+    return VIDEO_URL_REGEX.test(url.trim());
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
     if (!user) return null;
 
     const fileExt = file.name.split(".").pop();
@@ -95,12 +102,13 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
     return data.publicUrl;
   };
 
+  const hasMedia = selectedImage || (videoUrl && validateVideoUrl(videoUrl));
+
   const handleSubmit = async () => {
-    // FlexU REQUIRES media - no text-only posts allowed
-    if (!selectedMedia) {
+    if (!hasMedia) {
       toast({
         title: "Media required",
-        description: "FlexU requires at least one image or video to post.",
+        description: "FlexU requires an image or video link to post.",
         variant: "destructive",
       });
       return;
@@ -109,27 +117,32 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
     if (!user || !profile?.university_id) return;
 
     setIsLoading(true);
-    setIsUploadingMedia(true);
     
-    const mediaUrl = await uploadMedia(selectedMedia);
-    setIsUploadingMedia(false);
-    
-    if (!mediaUrl) {
-      toast({
-        title: "Error",
-        description: "Failed to upload media. Please try again.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
+    let mediaUrl: string | null = null;
+
+    if (selectedImage) {
+      setIsUploadingMedia(true);
+      mediaUrl = await uploadImage(selectedImage);
+      setIsUploadingMedia(false);
+      
+      if (!mediaUrl) {
+        toast({
+          title: "Error",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+    } else if (videoUrl && validateVideoUrl(videoUrl)) {
+      mediaUrl = videoUrl.trim();
     }
 
-    // FlexU posts are NEVER anonymous
     const { error } = await supabase.from("posts").insert({
-      content: content.trim() || "", // Caption is optional
+      content: content.trim() || "",
       user_id: user.id,
       university_id: profile.university_id,
-      is_anonymous: false, // Never anonymous for FlexU
+      is_anonymous: false,
       image_url: mediaUrl,
     });
 
@@ -143,7 +156,8 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
       });
     } else {
       setContent("");
-      removeMedia();
+      removeImage();
+      setVideoUrl("");
       toast({
         title: "Posted!",
         description: "Your post is now live on FlexU.",
@@ -168,7 +182,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
           <div className="flex-1">
             <p className="text-sm font-semibold mb-2">{displayName}</p>
             <p className="text-xs text-muted-foreground mb-2">
-              📸 Media required • Your identity will be shown
+              📸 Image or video link required • Your identity will be shown
             </p>
             <Textarea
               placeholder="Write a caption... (optional)"
@@ -179,68 +193,105 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
           </div>
         </div>
 
-        {/* Media Preview */}
-        {mediaPreview && (
-          <div className="mt-3 relative">
-            {mediaType === "image" ? (
-              <img
-                src={mediaPreview}
-                alt="Preview"
-                className="w-full max-h-96 object-cover rounded-lg"
-              />
-            ) : (
-              <video
-                src={mediaPreview}
-                controls
-                className="w-full max-h-96 rounded-lg"
-              />
-            )}
-            <button
-              onClick={removeMedia}
-              className="absolute top-2 right-2 p-1 bg-black/60 rounded-full text-white hover:bg-black/80"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        {/* Media Selection Tabs */}
+        <Tabs value={mediaTab} onValueChange={(v) => setMediaTab(v as "image" | "video")} className="mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="image" className="flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Upload Image
+            </TabsTrigger>
+            <TabsTrigger value="video" className="flex items-center gap-2">
+              <Link className="w-4 h-4" />
+              Video Link
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Media Upload Prompt */}
-        {!mediaPreview && (
-          <button
-            onClick={() => mediaInputRef.current?.click()}
-            className="mt-4 w-full border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <Image className="w-6 h-6 text-muted-foreground" />
-              <Video className="w-6 h-6 text-muted-foreground" />
+          <TabsContent value="image" className="mt-4">
+            {imagePreview ? (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full max-h-96 object-cover rounded-lg"
+                />
+                <button
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 p-1 bg-black/60 rounded-full text-white hover:bg-black/80"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-muted/50 transition-colors"
+              >
+                <Image className="w-8 h-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Click to upload an image</p>
+                <p className="text-xs text-muted-foreground">Max 4MB • JPG, PNG, GIF, WebP</p>
+              </button>
+            )}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+          </TabsContent>
+
+          <TabsContent value="video" className="mt-4 space-y-3">
+            <div className="space-y-2">
+              <Input
+                placeholder="Paste video link (YouTube, TikTok, Instagram, Vimeo...)"
+                value={videoUrl}
+                onChange={(e) => {
+                  setVideoUrl(e.target.value);
+                  if (e.target.value) {
+                    removeImage();
+                  }
+                }}
+                className="bg-muted border-0 focus-visible:ring-1"
+              />
+              <p className="text-xs text-muted-foreground">
+                Supported: YouTube, TikTok, Instagram, Vimeo, Twitter/X
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">Click to upload an image or video</p>
-            <p className="text-xs text-muted-foreground">Required to post on FlexU</p>
-          </button>
-        )}
+            {videoUrl && !validateVideoUrl(videoUrl) && (
+              <p className="text-xs text-destructive">
+                Please enter a valid video URL from YouTube, TikTok, Instagram, Vimeo, or Twitter/X
+              </p>
+            )}
+            {videoUrl && validateVideoUrl(videoUrl) && (
+              <div className="p-3 bg-muted rounded-lg flex items-center gap-2">
+                <Link className="w-5 h-5 text-primary" />
+                <span className="text-sm text-foreground truncate flex-1">{videoUrl}</span>
+                <button onClick={() => setVideoUrl("")} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="border-t px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => mediaInputRef.current?.click()}
+            onClick={() => {
+              setMediaTab("image");
+              imageInputRef.current?.click();
+            }}
             className="text-primary hover:text-primary/80 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            <span className="text-sm">{selectedMedia ? "Change media" : "Add media"}</span>
+            <span className="text-sm">{selectedImage ? "Change image" : "Add image"}</span>
           </button>
-          <input
-            ref={mediaInputRef}
-            type="file"
-            accept="image/*,video/*"
-            onChange={handleMediaSelect}
-            className="hidden"
-          />
         </div>
         
         <Button
           onClick={handleSubmit}
-          disabled={!selectedMedia || isLoading}
+          disabled={!hasMedia || isLoading}
           size="sm"
           className="gap-2"
         >

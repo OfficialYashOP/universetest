@@ -135,11 +135,24 @@ export const StoriesBar = () => {
     const file = e.target.files?.[0];
     if (!file || !user || !profile?.university_id) return;
 
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
+    // Only allow images for stories - no video uploads
+    if (!file.type.startsWith("image/")) {
+      toast({ 
+        title: "Images only", 
+        description: "Stories only support image uploads. For videos, share a link in FlexU posts.", 
+        variant: "destructive" 
+      });
+      return;
+    }
 
-    if (!isImage && !isVideo) {
-      toast({ title: "Please select an image or video", variant: "destructive" });
+    // 4MB limit for images
+    const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast({ 
+        title: "Image too large", 
+        description: "Image must be less than 4MB. Please compress or resize your image.", 
+        variant: "destructive" 
+      });
       return;
     }
 
@@ -164,7 +177,7 @@ export const StoriesBar = () => {
       user_id: user.id,
       university_id: profile.university_id,
       media_url: urlData.publicUrl,
-      media_type: isImage ? "image" : "video",
+      media_type: "image",
     });
 
     setIsUploading(false);
@@ -217,7 +230,7 @@ export const StoriesBar = () => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/jpeg,image/png,image/gif,image/webp"
           onChange={handleCreateStory}
           className="hidden"
         />
