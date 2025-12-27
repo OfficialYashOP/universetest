@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { Loader2 } from "lucide-react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -30,14 +30,7 @@ export const ProtectedRoute = ({
 
   // Show loading state
   if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Authenticating..." />;
   }
 
   // Not logged in - redirect to auth
@@ -49,14 +42,7 @@ export const ProtectedRoute = ({
   // Logged in but no profile yet (edge case)
   if (!profile) {
     console.log("[ProtectedRoute] User but no profile, showing loading");
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Setting up your profile...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Setting up your profile..." />;
   }
 
   // Check verification requirement
