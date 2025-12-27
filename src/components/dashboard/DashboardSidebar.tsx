@@ -138,16 +138,6 @@ export const DashboardSidebar = () => {
           </div>
         </Link>
 
-        {/* Verification Status */}
-        {!profile?.is_verified && (
-          <Link
-            to="/profile?tab=verification"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-amber-400 bg-amber-400/10 rounded-lg hover:bg-amber-400/20 transition-colors"
-          >
-            <Shield className="w-4 h-4" />
-            <span>Complete verification</span>
-          </Link>
-        )}
 
         <button
           onClick={signOut}
