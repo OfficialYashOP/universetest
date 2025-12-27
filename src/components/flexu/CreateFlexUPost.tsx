@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image, Link, Send, X, Loader2, Plus } from "lucide-react";
+import { Image, Link, Send, X, Loader2, Plus, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { extractVideoInfo, isVideoUrl, getPlatformName } from "@/lib/videoUtils";
+import { compressImage, needsCompression, formatFileSize } from "@/lib/imageCompression";
 
 interface CreateFlexUPostProps {
   onPostCreated?: () => void;
@@ -17,7 +19,7 @@ interface CreateFlexUPostProps {
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
 
 // Regex to validate video URLs (YouTube, Vimeo, etc.)
-const VIDEO_URL_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/|dailymotion\.com\/video\/|tiktok\.com\/@[\w.-]+\/video\/|instagram\.com\/(p|reel)\/|twitter\.com\/\w+\/status\/|x\.com\/\w+\/status\/)/i;
+const VIDEO_URL_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|vimeo\.com\/|dailymotion\.com\/video\/|tiktok\.com\/@[\w.-]+\/video\/|instagram\.com\/(p|reel)\/|twitter\.com\/\w+\/status\/|x\.com\/\w+\/status\/)/i;
 
 export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
   const { profile } = useProfile();
@@ -31,6 +33,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
   const [videoUrl, setVideoUrl] = useState("");
   const [mediaTab, setMediaTab] = useState<"image" | "video">("image");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name: string | null) => {
@@ -38,7 +41,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -51,23 +54,52 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
       return;
     }
 
-    if (file.size > MAX_IMAGE_SIZE) {
+    let processedFile = file;
+
+    // Check if compression is needed
+    if (needsCompression(file, 4)) {
+      setIsCompressing(true);
+      toast({
+        title: "Compressing image...",
+        description: `Original size: ${formatFileSize(file.size)}`,
+      });
+
+      try {
+        processedFile = await compressImage(file, { maxSizeMB: 4, maxWidthOrHeight: 2048 });
+        toast({
+          title: "Image compressed",
+          description: `Reduced to ${formatFileSize(processedFile.size)}`,
+        });
+      } catch (error) {
+        console.error("Compression error:", error);
+        toast({ 
+          title: "Compression failed", 
+          description: "Using original image. If upload fails, try a smaller image.", 
+          variant: "destructive" 
+        });
+      } finally {
+        setIsCompressing(false);
+      }
+    }
+
+    // Final size check
+    if (processedFile.size > MAX_IMAGE_SIZE) {
       toast({ 
         title: "Image too large", 
-        description: "Image must be less than 4MB. Please compress or resize your image.", 
+        description: "Image must be less than 4MB even after compression. Please use a smaller image.", 
         variant: "destructive" 
       });
       return;
     }
 
-    setSelectedImage(file);
+    setSelectedImage(processedFile);
     setVideoUrl("");
     
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processedFile);
   };
 
   const removeImage = () => {
@@ -103,6 +135,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
   };
 
   const hasMedia = selectedImage || (videoUrl && validateVideoUrl(videoUrl));
+  const videoInfo = videoUrl ? extractVideoInfo(videoUrl) : null;
 
   const handleSubmit = async () => {
     if (!hasMedia) {
@@ -207,7 +240,12 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
           </TabsList>
 
           <TabsContent value="image" className="mt-4">
-            {imagePreview ? (
+            {isCompressing ? (
+              <div className="w-full border-2 border-dashed border-primary/50 rounded-lg p-8 flex flex-col items-center justify-center gap-2 bg-muted/50">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground">Compressing image...</p>
+              </div>
+            ) : imagePreview ? (
               <div className="relative">
                 <img
                   src={imagePreview}
@@ -220,6 +258,11 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
                 >
                   <X className="w-4 h-4" />
                 </button>
+                {selectedImage && (
+                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                    {formatFileSize(selectedImage.size)}
+                  </div>
+                )}
               </div>
             ) : (
               <button
@@ -228,7 +271,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
               >
                 <Image className="w-8 h-8 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">Click to upload an image</p>
-                <p className="text-xs text-muted-foreground">Max 4MB • JPG, PNG, GIF, WebP</p>
+                <p className="text-xs text-muted-foreground">Auto-compressed to 4MB • JPG, PNG, GIF, WebP</p>
               </button>
             )}
             <input
@@ -257,18 +300,59 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
                 Supported: YouTube, TikTok, Instagram, Vimeo, Twitter/X
               </p>
             </div>
+            
             {videoUrl && !validateVideoUrl(videoUrl) && (
               <p className="text-xs text-destructive">
                 Please enter a valid video URL from YouTube, TikTok, Instagram, Vimeo, or Twitter/X
               </p>
             )}
-            {videoUrl && validateVideoUrl(videoUrl) && (
-              <div className="p-3 bg-muted rounded-lg flex items-center gap-2">
-                <Link className="w-5 h-5 text-primary" />
-                <span className="text-sm text-foreground truncate flex-1">{videoUrl}</span>
-                <button onClick={() => setVideoUrl("")} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
+            
+            {videoUrl && validateVideoUrl(videoUrl) && videoInfo && (
+              <div className="relative rounded-lg overflow-hidden bg-muted">
+                {/* Video Thumbnail Preview */}
+                {videoInfo.thumbnailUrl ? (
+                  <div className="relative aspect-video">
+                    <img
+                      src={videoInfo.thumbnailUrl}
+                      alt="Video thumbnail"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to medium quality for YouTube if maxres fails
+                        const target = e.target as HTMLImageElement;
+                        if (target.src.includes("maxresdefault")) {
+                          target.src = target.src.replace("maxresdefault", "hqdefault");
+                        }
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
+                        <Play className="w-8 h-8 text-black ml-1" />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setVideoUrl("")}
+                      className="absolute top-2 right-2 p-1 bg-black/60 rounded-full text-white hover:bg-black/80"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 flex items-center gap-3">
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${videoInfo.platform !== "unknown" ? extractVideoInfo(videoUrl).platform : "#6B7280"}20` }}
+                    >
+                      <Play className="w-6 h-6" style={{ color: videoInfo.platform !== "unknown" ? "#6B7280" : "#6B7280" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{getPlatformName(videoInfo.platform)} Video</p>
+                      <p className="text-xs text-muted-foreground truncate">{videoUrl}</p>
+                    </div>
+                    <button onClick={() => setVideoUrl("")} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
@@ -291,7 +375,7 @@ export const CreateFlexUPost = ({ onPostCreated }: CreateFlexUPostProps) => {
         
         <Button
           onClick={handleSubmit}
-          disabled={!hasMedia || isLoading}
+          disabled={!hasMedia || isLoading || isCompressing}
           size="sm"
           className="gap-2"
         >
