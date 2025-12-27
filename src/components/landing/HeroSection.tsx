@@ -33,7 +33,7 @@ const HeroSection = () => {
           >
             <Sparkles className="w-4 h-4 text-universe-cyan" />
             <span className="text-sm text-muted-foreground">
-              Exclusively for Verified University Students
+              Your Campus, Connected
             </span>
           </motion.div>
 
