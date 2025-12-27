@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
                   <li>Full name and email address</li>
                   <li>University name and affiliation</li>
-                  <li>Role (student, alumni, staff, or service provider)</li>
+                  <li>Role (student, alumni, or staff)</li>
                   <li>Profile photo (optional)</li>
                   <li>Phone number (optional)</li>
                 </ul>

@@ -38,12 +38,7 @@ import RequestUniversityPage from "./pages/RequestUniversityPage";
 
 // Auth Pages
 import StudentAuthPage from "./pages/auth/StudentAuthPage";
-import PartnerAuthPage from "./pages/auth/PartnerAuthPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
-
-// Partner Pages
-import PartnersLandingPage from "./pages/partners/PartnersLandingPage";
-import PartnerDashboard from "./pages/partners/PartnerDashboard";
 
 // LPU Campus Assist Pages
 import LPUCampusAssist from "./pages/lpu/LPUCampusAssist";
@@ -67,14 +62,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/auth/student" element={<StudentAuthPage />} />
-              <Route path="/auth/partner" element={<PartnerAuthPage />} />
               <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/verify" element={<VerifyPage />} />
               <Route path="/select-university" element={<SelectUniversityPage />} />
-              
-              {/* Partner Routes */}
-              <Route path="/partners" element={<PartnersLandingPage />} />
-              <Route path="/partners/dashboard" element={<PartnerDashboard />} />
               
               {/* Protected App Routes */}
               <Route path="/app/university/:slug" element={

@@ -43,7 +43,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import lpuLogo from "@/assets/lpu-logo.png";
 import { UniversitiesTab } from "@/components/admin/UniversitiesTab";
-import { PartnersTab } from "@/components/admin/PartnersTab";
 import { AccountControlsTab } from "@/components/admin/AccountControlsTab";
 
 const AdminDashboard = () => {
@@ -349,9 +348,9 @@ const AdminDashboard = () => {
               <Users className="w-4 h-4 mr-2" />
               All Users
             </TabsTrigger>
-            <TabsTrigger value="partners">
-              <Store className="w-4 h-4 mr-2" />
-              Partners
+            <TabsTrigger value="accounts">
+              <ShieldCheck className="w-4 h-4 mr-2" />
+              Account Controls
             </TabsTrigger>
             <TabsTrigger value="accounts">
               <ShieldCheck className="w-4 h-4 mr-2" />
@@ -573,11 +572,6 @@ const AdminDashboard = () => {
                 </Table>
               </div>
             )}
-          </TabsContent>
-
-          {/* Partners Tab */}
-          <TabsContent value="partners">
-            <PartnersTab />
           </TabsContent>
 
           {/* Account Controls Tab */}

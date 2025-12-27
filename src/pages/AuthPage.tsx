@@ -262,28 +262,8 @@ const AuthPage = () => {
                   <GraduationCap className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold">I'm a Student</h3>
+                  <h3 className="font-semibold">Continue as Student</h3>
                   <p className="text-sm text-muted-foreground">Students, Seniors, Alumni, Staff</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </motion.div>
-          </Link>
-
-          {/* Partner Option */}
-          <Link to="/partners" className="block">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="glass-card p-6 border border-border hover:border-primary/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-secondary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">I'm a Vendor / Poster</h3>
-                  <p className="text-sm text-muted-foreground">Housing, Jobs, Local Services</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground" />
               </div>
