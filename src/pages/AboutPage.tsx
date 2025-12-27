@@ -16,19 +16,19 @@ import UniversityLogo from "@/components/university/UniversityLogo";
 import { useUniversities } from "@/hooks/useUniversities";
 
 const values = [
-  { icon: Shield, title: "Trust", desc: "Verification-first approach ensuring genuine university members only" },
+  { icon: Shield, title: "Trust", desc: "A secure approach ensuring genuine university members only" },
   { icon: Users, title: "Community", desc: "Building meaningful connections within campus ecosystems" },
-  { icon: Zap, title: "Safety", desc: "Zero tolerance for scams, fraud, and harmful behavior" },
+  { icon: Zap, title: "Safety", desc: "Zero tolerance for fraud and harmful behavior" },
   { icon: TrendingUp, title: "Growth", desc: "Empowering students to help each other succeed" },
 ];
 
 const problems = [
   { 
     title: "Scattered Groups", 
-    desc: "Fragmented WhatsApp, Telegram, and Facebook groups with no verification" 
+    desc: "Fragmented WhatsApp, Telegram, and Facebook groups with no organization" 
   },
   { 
-    title: "Scams & Fraud", 
+    title: "Unreliable Info", 
     desc: "Fake listings, impersonators, and unverified service providers" 
   },
   { 
@@ -63,8 +63,8 @@ const AboutPage = () => {
               About <span className="gradient-text">Sympan</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              The digital campus for verified students. A secure, scam-free ecosystem where 
-              university communities connect, collaborate, and thrive together.
+              Your campus, connected. A trusted ecosystem where university communities 
+              find resources, build connections, and thrive together.
             </p>
           </div>
         </div>
@@ -79,7 +79,7 @@ const AboutPage = () => {
               <h2 className="text-3xl font-bold">What is Sympan?</h2>
             </div>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              Sympan is a university-exclusive social platform that brings together verified students, 
+              Sympan is a university-exclusive platform that brings together students, 
               seniors, alumni, staff, and trusted local service providers. Think of it as your digital campus 
               — a single, trusted place for everything you need during your university journey.
             </p>
@@ -198,7 +198,7 @@ const AboutPage = () => {
                   <p className="text-primary font-medium mb-3">Founder & Developer</p>
                   <p className="text-muted-foreground leading-relaxed">
                     Founded Sympan to solve the fragmented communication and trust issues 
-                    in university communities. Building a secure, scam-free ecosystem where 
+                    in university communities. Building a secure ecosystem where 
                     students can connect, collaborate, and thrive together.
                   </p>
                 </div>

@@ -677,8 +677,8 @@ const StudentAuthPage = () => {
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
           />
           <h2 className="text-3xl font-bold mb-4">
-            The Digital Campus for
-            <span className="block gradient-text">Verified Students</span>
+            Your Campus,
+            <span className="block gradient-text">Connected</span>
           </h2>
           <p className="text-muted-foreground max-w-sm">
             Connect with your campus community, find housing, discover services, 
@@ -687,8 +687,8 @@ const StudentAuthPage = () => {
 
           <div className="mt-12 space-y-4 text-left">
             {[
-              "University-verified community",
-              "Secure & scam-free platform",
+              "University-exclusive community",
+              "Trusted campus network",
               "Housing & roommate finder",
               "Academic resources sharing"
             ].map((feature, i) => (

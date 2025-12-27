@@ -22,7 +22,7 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "What is Sympan?",
-        answer: "Sympan is a university-exclusive social platform that connects verified students, seniors, alumni, and approved service providers. It's your digital campus for finding housing, sharing resources, connecting with mentors, and discovering trusted local services."
+        answer: "Sympan is a university-exclusive platform that connects students, seniors, alumni, and approved service providers. It is your digital campus for finding housing, sharing resources, connecting with mentors, and discovering trusted local services."
       },
       {
         question: "Who can join Sympan?",

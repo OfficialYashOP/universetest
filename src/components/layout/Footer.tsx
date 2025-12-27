@@ -34,7 +34,7 @@ const Footer = () => {
               <span className="text-xl font-bold gradient-text">Sympan</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              The digital campus for verified students. Connect, learn, and grow together.
+              Your campus, connected. Find resources, build connections, and thrive together.
             </p>
           </div>
 
