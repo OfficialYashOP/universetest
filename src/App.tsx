@@ -41,6 +41,7 @@ import CookiePolicy from "./pages/legal/CookiePolicy";
 import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
 import RequestUniversityPage from "./pages/RequestUniversityPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 // Auth Pages
 import StudentAuthPage from "./pages/auth/StudentAuthPage";
@@ -153,6 +154,11 @@ const App = () => (
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/user/:userId" element={
+                <ProtectedRoute>
+                  <UserProfilePage />
                 </ProtectedRoute>
               } />
               
