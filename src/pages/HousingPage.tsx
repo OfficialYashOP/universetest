@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -23,15 +23,20 @@ import {
   Plus,
   MapPin,
   IndianRupee,
-  Users,
   Phone,
   Filter,
   Loader2,
   Home,
   BadgeCheck,
-  X
+  X,
+  MessageCircle,
+  Image as ImageIcon,
+  Handshake,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImage } from "@/lib/imageCompression";
 
 interface HousingListing {
   id: string;
@@ -45,9 +50,11 @@ interface HousingListing {
   gender_preference: string | null;
   amenities: string[] | null;
   contact_phone: string | null;
+  images: string[] | null;
   is_verified: boolean;
   created_at: string;
   user_id: string;
+  is_negotiable?: boolean;
   owner?: {
     full_name: string | null;
     avatar_url: string | null;
@@ -81,10 +88,14 @@ const amenitiesList = [
   "Laundry", "Parking", "Power Backup", "Security"
 ];
 
+const MAX_IMAGES = 5;
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+
 const HousingPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [listings, setListings] = useState<HousingListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +106,8 @@ const HousingPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   
   // New listing form
   const [newListing, setNewListing] = useState({
@@ -108,6 +121,7 @@ const HousingPage = () => {
     gender_preference: "any",
     amenities: [] as string[],
     contact_phone: "",
+    is_negotiable: false,
   });
 
   useEffect(() => {
@@ -116,7 +130,6 @@ const HousingPage = () => {
 
       setLoading(true);
       
-      // Use security definer function to prevent contact_phone exposure
       const { data, error } = await supabase
         .rpc("get_housing_listings_safe", { university_filter: profile.university_id });
 
@@ -126,14 +139,11 @@ const HousingPage = () => {
         return;
       }
       
-      // Filter for active listings only (function returns all statuses)
       const activeListings = (data || []).filter((l: any) => l.status === "active");
 
-      // Fetch owner profiles using public profile function
       const userIds = [...new Set(activeListings?.map((l: any) => l.user_id) || [])];
       const profilesMap: Record<string, any> = {};
       
-      // Fetch each profile individually using the safe function
       for (const userId of userIds) {
         const { data: profileData } = await supabase
           .rpc("get_public_profile", { profile_id: userId });
@@ -142,7 +152,6 @@ const HousingPage = () => {
         }
       }
 
-      // Sort by created_at descending
       const sortedListings = activeListings.sort((a: any, b: any) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
@@ -174,57 +183,164 @@ const HousingPage = () => {
     return matchesSearch && matchesType && matchesPrice && matchesGender;
   });
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remainingSlots = MAX_IMAGES - selectedImages.length;
+    
+    if (files.length > remainingSlots) {
+      toast({
+        title: "Too many images",
+        description: `You can only upload ${MAX_IMAGES} images. ${remainingSlots} slot(s) remaining.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const validFiles: File[] = [];
+    const previewUrls: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "Invalid file", description: `${file.name} is not an image`, variant: "destructive" });
+        continue;
+      }
+
+      try {
+        const compressedFile = await compressImage(file);
+        if (compressedFile.size > MAX_IMAGE_SIZE) {
+          toast({ 
+            title: "Image too large", 
+            description: `${file.name} exceeds 4MB after compression`, 
+            variant: "destructive" 
+          });
+          continue;
+        }
+        validFiles.push(compressedFile);
+        previewUrls.push(URL.createObjectURL(compressedFile));
+      } catch (error) {
+        console.error("Error compressing image:", error);
+      }
+    }
+
+    setSelectedImages(prev => [...prev, ...validFiles]);
+    setImagePreviewUrls(prev => [...prev, ...previewUrls]);
+  };
+
+  const removeImage = (index: number) => {
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (!user || selectedImages.length === 0) return [];
+
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < selectedImages.length; i++) {
+      const file = selectedImages[i];
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
+
+      const { error } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file);
+
+      if (error) {
+        console.error("Upload error:", error);
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      if (urlData?.publicUrl) {
+        uploadedUrls.push(urlData.publicUrl);
+      }
+    }
+
+    return uploadedUrls;
+  };
+
   const handleCreateListing = async () => {
-    if (!user || !profile?.university_id) return;
+    if (!user || !profile?.university_id) {
+      toast({ title: "Error", description: "Please log in to post a listing", variant: "destructive" });
+      return;
+    }
     
     if (!newListing.title.trim()) {
       toast({ title: "Error", description: "Please enter a title", variant: "destructive" });
       return;
     }
 
-    setIsSubmitting(true);
-
-    const { data, error } = await supabase
-      .from("housing_listings")
-      .insert({
-        title: newListing.title.trim(),
-        description: newListing.description.trim() || null,
-        listing_type: newListing.listing_type,
-        location: newListing.location.trim() || null,
-        address: newListing.address.trim() || null,
-        price: newListing.price ? Number(newListing.price) : null,
-        room_type: newListing.room_type,
-        gender_preference: newListing.gender_preference,
-        amenities: newListing.amenities,
-        contact_phone: newListing.contact_phone.trim() || null,
-        user_id: user.id,
-        university_id: profile.university_id,
-      })
-      .select()
-      .single();
-
-    setIsSubmitting(false);
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to create listing", variant: "destructive" });
+    if (!newListing.contact_phone.trim()) {
+      toast({ title: "Error", description: "Please enter a contact phone number", variant: "destructive" });
       return;
     }
 
-    toast({ title: "Success", description: "Listing created successfully!" });
-    setListings(prev => [{ ...data, owner: { full_name: profile.full_name, avatar_url: profile.avatar_url, is_verified: profile.is_verified } }, ...prev]);
-    setIsDialogOpen(false);
-    setNewListing({
-      title: "",
-      description: "",
-      listing_type: "pg",
-      location: "",
-      address: "",
-      price: "",
-      room_type: "single",
-      gender_preference: "any",
-      amenities: [],
-      contact_phone: "",
-    });
+    setIsSubmitting(true);
+
+    try {
+      // Upload images first
+      const imageUrls = await uploadImages();
+
+      const { data, error } = await supabase
+        .from("housing_listings")
+        .insert({
+          title: newListing.title.trim(),
+          description: newListing.description.trim() || null,
+          listing_type: newListing.listing_type,
+          location: newListing.location.trim() || null,
+          address: newListing.address.trim() || null,
+          price: newListing.price ? Number(newListing.price) : null,
+          room_type: newListing.room_type,
+          gender_preference: newListing.gender_preference,
+          amenities: newListing.amenities,
+          contact_phone: newListing.contact_phone.trim(),
+          images: imageUrls.length > 0 ? imageUrls : null,
+          user_id: user.id,
+          university_id: profile.university_id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: "Listing created successfully!" });
+      setListings(prev => [{ 
+        ...data, 
+        is_negotiable: newListing.is_negotiable,
+        owner: { 
+          full_name: profile.full_name, 
+          avatar_url: profile.avatar_url, 
+          is_verified: profile.is_verified || false
+        } 
+      }, ...prev]);
+      
+      // Reset form
+      setIsDialogOpen(false);
+      setNewListing({
+        title: "",
+        description: "",
+        listing_type: "pg",
+        location: "",
+        address: "",
+        price: "",
+        room_type: "single",
+        gender_preference: "any",
+        amenities: [],
+        contact_phone: "",
+        is_negotiable: false,
+      });
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+    } catch (error: any) {
+      console.error("Error creating listing:", error);
+      toast({ title: "Error", description: error.message || "Failed to create listing", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -239,6 +355,12 @@ const HousingPage = () => {
   const getInitials = (name: string | null) => {
     if (!name) return "U";
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const formatWhatsAppUrl = (phone: string, title: string) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    const message = encodeURIComponent(`Hi! I'm interested in your listing: "${title}" on UniConnect.`);
+    return `https://wa.me/${cleanPhone}?text=${message}`;
   };
 
   return (
@@ -269,6 +391,43 @@ const HousingPage = () => {
               </DialogHeader>
               
               <div className="space-y-4 py-4">
+                {/* Image Upload */}
+                <div className="space-y-2">
+                  <Label>Photos (up to {MAX_IMAGES})</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {imagePreviewUrls.map((url, index) => (
+                      <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {selectedImages.length < MAX_IMAGES && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <ImageIcon className="w-5 h-5" />
+                        <span className="text-xs">Add</span>
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label>Title *</Label>
                   <Input
@@ -319,6 +478,23 @@ const HousingPage = () => {
                   </div>
                 </div>
 
+                {/* Negotiable Option */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewListing({ ...newListing, is_negotiable: !newListing.is_negotiable })}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors",
+                      newListing.is_negotiable
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <Handshake className="w-4 h-4" />
+                    <span className="text-sm">Price Negotiable</span>
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Room Type</Label>
@@ -356,12 +532,15 @@ const HousingPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Contact Phone</Label>
+                  <Label>Contact Phone *</Label>
                   <Input
                     placeholder="+91 1234567890"
                     value={newListing.contact_phone}
                     onChange={(e) => setNewListing({ ...newListing, contact_phone: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    This will be used for call and WhatsApp contact buttons
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -401,7 +580,10 @@ const HousingPage = () => {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Posting...
+                    </>
                   ) : (
                     "Post Listing"
                   )}
@@ -497,109 +679,198 @@ const HousingPage = () => {
           <div className="text-center py-12">
             <Home className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No listings found</p>
-            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or post a new listing</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
             {filteredListings.map((listing) => (
-              <div
-                key={listing.id}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {listing.listing_type}
-                      </Badge>
-                      {listing.gender_preference && listing.gender_preference !== "any" && (
-                        <Badge variant="secondary" className="text-xs capitalize">
-                          {listing.gender_preference}
-                        </Badge>
-                      )}
-                      {listing.is_verified && (
-                        <Badge className="bg-universe-cyan/20 text-universe-cyan border-0 text-xs">
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <h3 className="font-semibold text-lg">{listing.title}</h3>
-                  </div>
-                  {listing.price && (
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-primary flex items-center">
-                        <IndianRupee className="w-4 h-4" />
-                        {listing.price.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">/month</p>
-                    </div>
-                  )}
-                </div>
-
-                {listing.location && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
-                    <MapPin className="w-4 h-4" />
-                    {listing.location}
-                  </p>
-                )}
-
-                {listing.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {listing.description}
-                  </p>
-                )}
-
-                {listing.amenities && listing.amenities.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {listing.amenities.slice(0, 4).map((amenity) => (
-                      <span
-                        key={amenity}
-                        className="text-xs bg-muted px-2 py-1 rounded-full"
-                      >
-                        {amenity}
-                      </span>
-                    ))}
-                    {listing.amenities.length > 4 && (
-                      <span className="text-xs text-muted-foreground">
-                        +{listing.amenities.length - 4} more
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={listing.owner?.avatar_url || ""} />
-                      <AvatarFallback className="bg-muted text-xs">
-                        {getInitials(listing.owner?.full_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium">{listing.owner?.full_name || "Unknown"}</span>
-                        {listing.owner?.is_verified && (
-                          <BadgeCheck className="w-4 h-4 text-universe-cyan" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {listing.contact_phone && (
-                    <Button variant="outline" size="sm" className="gap-2" asChild>
-                      <a href={`tel:${listing.contact_phone}`}>
-                        <Phone className="w-4 h-4" />
-                        Contact
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <ListingCard 
+                key={listing.id} 
+                listing={listing} 
+                getInitials={getInitials}
+                formatWhatsAppUrl={formatWhatsAppUrl}
+              />
             ))}
           </div>
         )}
       </div>
     </DashboardLayout>
+  );
+};
+
+// Listing Card Component with Image Carousel
+const ListingCard = ({ 
+  listing, 
+  getInitials, 
+  formatWhatsAppUrl 
+}: { 
+  listing: HousingListing; 
+  getInitials: (name: string | null) => string;
+  formatWhatsAppUrl: (phone: string, title: string) => string;
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = listing.images || [];
+  const hasImages = images.length > 0;
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+      {/* Image Carousel */}
+      {hasImages && (
+        <div className="relative h-48 bg-muted">
+          <img
+            src={images[currentImageIndex]}
+            alt={listing.title}
+            className="w-full h-full object-cover"
+          />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {images.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-colors",
+                      idx === currentImageIndex ? "bg-white" : "bg-white/50"
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <Badge variant="outline" className="text-xs capitalize">
+                {listing.listing_type}
+              </Badge>
+              {listing.gender_preference && listing.gender_preference !== "any" && (
+                <Badge variant="secondary" className="text-xs capitalize">
+                  {listing.gender_preference}
+                </Badge>
+              )}
+              {listing.is_verified && (
+                <Badge className="bg-universe-cyan/20 text-universe-cyan border-0 text-xs">
+                  Verified
+                </Badge>
+              )}
+            </div>
+            <h3 className="font-semibold text-lg">{listing.title}</h3>
+          </div>
+          {listing.price && (
+            <div className="text-right">
+              <p className="text-xl font-bold text-primary flex items-center">
+                <IndianRupee className="w-4 h-4" />
+                {listing.price.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-1 justify-end">
+                <p className="text-xs text-muted-foreground">/month</p>
+                {listing.is_negotiable && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Handshake className="w-3 h-3" />
+                    Negotiable
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {listing.location && (
+          <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
+            <MapPin className="w-4 h-4" />
+            {listing.location}
+          </p>
+        )}
+
+        {listing.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+            {listing.description}
+          </p>
+        )}
+
+        {listing.amenities && listing.amenities.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {listing.amenities.slice(0, 4).map((amenity) => (
+              <span
+                key={amenity}
+                className="text-xs bg-muted px-2 py-1 rounded-full"
+              >
+                {amenity}
+              </span>
+            ))}
+            {listing.amenities.length > 4 && (
+              <span className="text-xs text-muted-foreground">
+                +{listing.amenities.length - 4} more
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={listing.owner?.avatar_url || ""} />
+              <AvatarFallback className="bg-muted text-xs">
+                {getInitials(listing.owner?.full_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{listing.owner?.full_name || "Unknown"}</span>
+                {listing.owner?.is_verified && (
+                  <BadgeCheck className="w-4 h-4 text-universe-cyan" />
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {listing.contact_phone && (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="gap-1" asChild>
+                <a href={`tel:${listing.contact_phone}`}>
+                  <Phone className="w-4 h-4" />
+                  Call
+                </a>
+              </Button>
+              <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700" asChild>
+                <a 
+                  href={formatWhatsAppUrl(listing.contact_phone, listing.title)} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </a>
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
