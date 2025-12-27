@@ -72,6 +72,10 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-outfit antialiased;
   }
@@ -120,6 +124,14 @@
     background-size: 200% 200%;
   }
 
+  .smooth-transition {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .page-transition {
+    animation: page-fade-in 0.4s ease-out;
+  }
+
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-20px); }
@@ -129,5 +141,16 @@
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+  }
+
+  @keyframes page-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
