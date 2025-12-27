@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow, differenceInMinutes } from "date-fns";
-import { Heart, MessageCircle, Share2, MoreHorizontal, EyeOff, Pencil, Check, X, Loader2, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, EyeOff, Pencil, Check, X, Loader2, Trash2, Flag } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { CommentsModal } from "@/components/comments/CommentsModal";
+import { ReportModal } from "@/components/reports/ReportModal";
 
 interface OffRecordPostCardProps {
   post: {
@@ -54,6 +55,7 @@ export const OffRecordPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked =
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   // Check if post is editable (within 10 minutes and owned by user)
   const postAge = differenceInMinutes(new Date(), new Date(post.created_at));
@@ -187,7 +189,7 @@ export const OffRecordPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked =
             </div>
           </div>
           
-          {isOwnPost && !isEditing && (
+          {!isEditing && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -195,20 +197,30 @@ export const OffRecordPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked =
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {canEdit && (
+                {isOwnPost && canEdit && (
                   <DropdownMenuItem onClick={() => setIsEditing(true)}>
                     <Pencil className="w-4 h-4 mr-2" />
                     Edit post
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete post
-                </DropdownMenuItem>
+                {isOwnPost && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete post
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {!isOwnPost && (
+                  <DropdownMenuItem onClick={() => setShowReport(true)}>
+                    <Flag className="w-4 h-4 mr-2" />
+                    Report post
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -297,6 +309,14 @@ export const OffRecordPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked =
         onClose={() => setShowComments(false)}
         isAnonymousMode={true}
         onCommentAdded={() => setCommentsCount(prev => prev + 1)}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReport}
+        onClose={() => setShowReport(false)}
+        reportedType="post"
+        reportedId={post.id}
       />
 
       {/* Delete Confirmation */}
