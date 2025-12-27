@@ -5,7 +5,8 @@ import { PostCard } from "@/components/dashboard/PostCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { Loader2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Post {
   id: string;
@@ -126,7 +127,7 @@ const Dashboard = () => {
         <div className="space-y-4">
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <LoadingSpinner size="md" message="Loading posts..." />
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12 space-y-3">
