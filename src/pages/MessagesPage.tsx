@@ -98,13 +98,11 @@ const MessagesPage = () => {
               .limit(1);
 
             if (participants?.[0]) {
+              // Use secure function to prevent PII exposure
               const { data: otherUser } = await supabase
-                .from("profiles")
-                .select("id, full_name, avatar_url, is_verified")
-                .eq("id", participants[0].user_id)
-                .maybeSingle();
+                .rpc("get_messaging_profile", { profile_id: participants[0].user_id });
 
-              return { ...convo, other_participant: otherUser };
+              return { ...convo, other_participant: otherUser?.[0] || null };
             }
           }
           return convo;
@@ -155,14 +153,11 @@ const MessagesPage = () => {
           { conversation_id: newConvo.id, user_id: newUserId },
         ]);
 
-      // Fetch the other user's profile
+      // Fetch the other user's profile using secure function
       const { data: otherUser } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url, is_verified")
-        .eq("id", newUserId)
-        .maybeSingle();
+        .rpc("get_messaging_profile", { profile_id: newUserId });
 
-      const enrichedConvo = { ...newConvo, other_participant: otherUser };
+      const enrichedConvo = { ...newConvo, other_participant: otherUser?.[0] || null };
       setConversations(prev => [enrichedConvo, ...prev]);
       setSelectedConversation(newConvo.id);
       setShowMobileChat(true);
@@ -183,15 +178,13 @@ const MessagesPage = () => {
         .order("created_at", { ascending: true });
 
       if (data) {
-        // Fetch sender profiles
+        // Fetch sender profiles using secure function
         const senderIds = [...new Set(data.map(m => m.sender_id))];
         const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, full_name, avatar_url")
-          .in("id", senderIds);
+          .rpc("get_messaging_profiles", { profile_ids: senderIds });
 
         const profilesMap: Record<string, any> = {};
-        profiles?.forEach(p => profilesMap[p.id] = p);
+        profiles?.forEach((p: any) => profilesMap[p.id] = p);
 
         setMessages(data.map(m => ({ ...m, sender: profilesMap[m.sender_id] })));
       }
@@ -212,13 +205,11 @@ const MessagesPage = () => {
         },
         async (payload) => {
           const newMsg = payload.new as Message;
-          const { data: sender } = await supabase
-            .from("profiles")
-            .select("id, full_name, avatar_url")
-            .eq("id", newMsg.sender_id)
-            .maybeSingle();
+          // Use secure function to prevent PII exposure
+          const { data: senderData } = await supabase
+            .rpc("get_messaging_profile", { profile_id: newMsg.sender_id });
 
-          setMessages(prev => [...prev, { ...newMsg, sender }]);
+          setMessages(prev => [...prev, { ...newMsg, sender: senderData?.[0] || null }]);
         }
       )
       .subscribe();

@@ -1164,6 +1164,24 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_messaging_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          is_verified: boolean
+        }[]
+      }
+      get_messaging_profiles: {
+        Args: { profile_ids: string[] }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          is_verified: boolean
+        }[]
+      }
       get_public_profile: {
         Args: { profile_id: string }
         Returns: {
