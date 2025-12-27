@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CreateFlexUPost } from "@/components/flexu/CreateFlexUPost";
 import { FlexUPostCard } from "@/components/flexu/FlexUPostCard";
-import { useProfile } from "@/hooks/useProfile";
-import { supabase } from "@/integrations/supabase/client";
+import { StoriesBar } from "@/components/stories/StoriesBar";
+import { useRealtimePosts } from "@/hooks/useRealtimePosts";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -18,11 +17,11 @@ import {
   Image,
   BadgeCheck,
   LayoutGrid,
-  Plus
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Post {
   id: string;
@@ -41,72 +40,15 @@ interface Post {
 }
 
 const FlexUPage = () => {
-  const { profile } = useProfile();
   const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { posts, loading, userLikes, refetch } = useRealtimePosts("flexu");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState("feed");
 
-  useEffect(() => {
-    fetchPosts();
-  }, [profile?.university_id]);
-
-  const fetchPosts = async () => {
-    if (!profile?.university_id) return;
-
-    setLoading(true);
-    
-    // FlexU only shows NON-anonymous posts WITH media
-    const { data: postsData, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("university_id", profile.university_id)
-      .eq("is_anonymous", false) // No anonymous posts
-      .not("image_url", "is", null) // Media required
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (error) {
-      console.error("Error fetching posts:", error);
-      setLoading(false);
-      return;
-    }
-
-    // Fetch author profiles
-    const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
-
-    let profilesMap: Record<string, any> = {};
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, username, avatar_url, is_verified")
-        .in("id", userIds);
-
-      profiles?.forEach(p => {
-        profilesMap[p.id] = p;
-      });
-    }
-
-    // Fetch user's likes
-    if (user) {
-      const { data: likes } = await supabase
-        .from("post_likes")
-        .select("post_id")
-        .eq("user_id", user.id);
-
-      setUserLikes(new Set(likes?.map(l => l.post_id) || []));
-    }
-
-    const postsWithAuthors = postsData?.map(post => ({
-      ...post,
-      author: profilesMap[post.user_id],
-    })) || [];
-
-    setPosts(postsWithAuthors);
-    setLoading(false);
+  const getInitials = (name: string | null) => {
+    if (!name) return "?";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
   const handleLike = async (postId: string) => {
@@ -120,29 +62,16 @@ const FlexUPage = () => {
         .delete()
         .eq("post_id", postId)
         .eq("user_id", user.id);
-      
-      setUserLikes(prev => {
-        const next = new Set(prev);
-        next.delete(postId);
-        return next;
-      });
     } else {
       await supabase
         .from("post_likes")
         .insert({ post_id: postId, user_id: user.id });
-      
-      setUserLikes(prev => new Set(prev).add(postId));
     }
     
-    fetchPosts();
+    refetch();
   };
 
-  const getInitials = (name: string | null) => {
-    if (!name) return "?";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-  };
-
-  const filteredPosts = posts.filter(post => {
+  const filteredPosts = (posts as Post[]).filter(post => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -155,6 +84,9 @@ const FlexUPage = () => {
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto p-4 space-y-6">
+        {/* Stories Bar */}
+        <StoriesBar />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -183,7 +115,7 @@ const FlexUPage = () => {
 
           <TabsContent value="feed" className="space-y-6 mt-6">
             {/* Create Post */}
-            <CreateFlexUPost onPostCreated={fetchPosts} />
+            <CreateFlexUPost onPostCreated={refetch} />
 
             {/* Feed View */}
             {loading ? (
@@ -203,8 +135,8 @@ const FlexUPage = () => {
                     key={post.id}
                     post={post}
                     isLiked={userLikes.has(post.id)}
-                    onLikeToggle={fetchPosts}
-                    onPostUpdated={fetchPosts}
+                    onLikeToggle={refetch}
+                    onPostUpdated={refetch}
                   />
                 ))}
               </div>

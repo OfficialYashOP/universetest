@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BadgeCheck, Loader2, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BadgeCheck, Loader2, Trash2, Flag } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -24,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { CommentsModal } from "@/components/comments/CommentsModal";
+import { ReportModal } from "@/components/reports/ReportModal";
 
 interface FlexUPostCardProps {
   post: {
@@ -58,6 +60,7 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const isOwnPost = user?.id === post.user_id;
 
@@ -162,14 +165,14 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
             </div>
           </div>
           
-          {isOwnPost ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-                  <MoreHorizontal className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+                <MoreHorizontal className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isOwnPost ? (
                 <DropdownMenuItem 
                   onClick={() => setShowDeleteDialog(true)}
                   className="text-destructive focus:text-destructive"
@@ -177,13 +180,14 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete post
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-              <MoreHorizontal className="w-5 h-5" />
-            </Button>
-          )}
+              ) : (
+                <DropdownMenuItem onClick={() => setShowReport(true)}>
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report post
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Media - Required for FlexU */}
@@ -266,6 +270,14 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
         onClose={() => setShowComments(false)}
         isAnonymousMode={false}
         onCommentAdded={() => setCommentsCount(prev => prev + 1)}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReport}
+        onClose={() => setShowReport(false)}
+        reportedType="post"
+        reportedId={post.id}
       />
 
       {/* Delete Confirmation */}

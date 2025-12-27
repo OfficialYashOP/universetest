@@ -140,6 +140,16 @@ const App = () => (
                   <FlexUPage />
                 </ProtectedRoute>
               } />
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/trending" element={
+                <ProtectedRoute>
+                  <TrendingPage />
+                </ProtectedRoute>
+              } />
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <AdminDashboard />
