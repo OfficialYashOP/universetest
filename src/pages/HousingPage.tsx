@@ -698,7 +698,7 @@ const HousingPage = () => {
   );
 };
 
-// Listing Card Component with Image Carousel
+// Listing Card Component with Image Carousel and Lightbox
 const ListingCard = ({ 
   listing, 
   getInitials, 
@@ -709,58 +709,78 @@ const ListingCard = ({
   formatWhatsAppUrl: (phone: string, title: string) => string;
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const images = listing.images || [];
   const hasImages = images.length > 0;
 
-  const nextImage = () => {
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
-  const prevImage = () => {
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
-      {/* Image Carousel */}
-      {hasImages && (
-        <div className="relative h-48 bg-muted">
-          <img
-            src={images[currentImageIndex]}
-            alt={listing.title}
-            className="w-full h-full object-cover"
-          />
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                {images.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-colors",
-                      idx === currentImageIndex ? "bg-white" : "bg-white/50"
-                    )}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
-      <div className="p-5">
+  // Import ImageLightbox dynamically to avoid circular deps
+  const ImageLightbox = require("@/components/ui/image-lightbox").ImageLightbox;
+
+  return (
+    <>
+      <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+        {/* Image Carousel */}
+        {hasImages && (
+          <div 
+            className="relative h-48 bg-muted cursor-pointer"
+            onClick={() => openLightbox(currentImageIndex)}
+          >
+            <img
+              src={images[currentImageIndex]}
+              alt={listing.title}
+              className="w-full h-full object-cover hover:opacity-95 transition-opacity"
+            />
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {images.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-colors",
+                        idx === currentImageIndex ? "bg-white" : "bg-white/50"
+                      )}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            {/* Click to expand hint */}
+            <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 text-white text-xs rounded-md opacity-0 hover:opacity-100 transition-opacity">
+              Click to expand
+            </div>
+          </div>
+        )}
+
+        <div className="p-5">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -869,8 +889,19 @@ const ListingCard = ({
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+
+      {/* Lightbox */}
+      {hasImages && (
+        <ImageLightbox
+          images={images}
+          initialIndex={lightboxIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
+    </>
   );
 };
 

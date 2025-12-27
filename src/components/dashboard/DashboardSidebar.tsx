@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Users, 
@@ -12,7 +13,8 @@ import {
   EyeOff,
   Image,
   MessageCircle,
-  TrendingUp
+  TrendingUp,
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +22,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserSearchModal } from "@/components/search/UserSearchModal";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -43,6 +46,7 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { profile } = useProfile();
+  const [showUserSearch, setShowUserSearch] = useState(false);
 
   const handleNavClick = () => {
     onNavigate?.();
@@ -74,6 +78,15 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {/* User Search Button */}
+        <button
+          onClick={() => setShowUserSearch(true)}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+        >
+          <Search className="w-5 h-5" />
+          <span className="font-medium">Find People</span>
+        </button>
+        
         {navItems.map((item) => {
           const isActive = location.pathname === item.href || 
             (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
@@ -148,6 +161,12 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
           <span className="font-medium">Sign Out</span>
         </button>
       </div>
+
+      {/* User Search Modal */}
+      <UserSearchModal 
+        isOpen={showUserSearch} 
+        onClose={() => setShowUserSearch(false)} 
+      />
     </aside>
   );
 };

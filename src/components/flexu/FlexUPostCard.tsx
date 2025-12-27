@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BadgeCheck, Loader2, Trash2, Flag, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,6 +52,7 @@ interface FlexUPostCardProps {
 }
 
 export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = false }: FlexUPostCardProps) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [liked, setLiked] = useState(isLiked);
@@ -66,6 +68,10 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
   const isOwnPost = user?.id === post.user_id;
   const isVideo = isVideoUrl(post.image_url);
   const videoInfo = isVideo ? extractVideoInfo(post.image_url) : null;
+
+  const handleProfileClick = () => {
+    navigate(`/user/${post.user_id}`);
+  };
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
@@ -181,7 +187,10 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-3">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={handleProfileClick}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <Avatar className="h-8 w-8 ring-2 ring-primary/20">
               <AvatarImage src={authorAvatar || ""} />
               <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white text-xs">
@@ -190,12 +199,12 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
             </Avatar>
             
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-sm">@{authorUsername}</span>
+              <span className="font-semibold text-sm hover:underline">@{authorUsername}</span>
               {isVerified && (
                 <BadgeCheck className="w-4 h-4 text-primary" />
               )}
             </div>
-          </div>
+          </button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -256,7 +265,7 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
           {/* Caption */}
           {post.content && (
             <div className="text-sm">
-              <span className="font-semibold">@{authorUsername}</span>{" "}
+              <button onClick={handleProfileClick} className="font-semibold hover:underline">@{authorUsername}</button>{" "}
               <span className="whitespace-pre-wrap">{post.content}</span>
             </div>
           )}
