@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BadgeCheck, Loader2, Trash2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BadgeCheck, Loader2, Trash2, Flag, Play, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { CommentsModal } from "@/components/comments/CommentsModal";
 import { ReportModal } from "@/components/reports/ReportModal";
+import { isVideoUrl, extractVideoInfo, getPlatformName } from "@/lib/videoUtils";
 
 interface FlexUPostCardProps {
   post: {
@@ -63,6 +64,8 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
   const [showReport, setShowReport] = useState(false);
 
   const isOwnPost = user?.id === post.user_id;
+  const isVideo = isVideoUrl(post.image_url);
+  const videoInfo = isVideo ? extractVideoInfo(post.image_url) : null;
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
@@ -139,10 +142,86 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
     }
   };
 
+  const openVideoLink = () => {
+    if (isVideo) {
+      window.open(post.image_url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const authorName = post.author?.full_name || "Unknown";
   const authorUsername = post.author?.username || authorName?.toLowerCase().replace(/\s+/g, '');
   const authorAvatar = post.author?.avatar_url;
   const isVerified = post.author?.is_verified;
+
+  // Render media (image or video thumbnail)
+  const renderMedia = () => {
+    if (isVideo && videoInfo) {
+      return (
+        <div 
+          className="relative aspect-square bg-muted cursor-pointer group"
+          onClick={openVideoLink}
+        >
+          {videoInfo.thumbnailUrl ? (
+            <img
+              src={videoInfo.thumbnailUrl}
+              alt="Video thumbnail"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src.includes("maxresdefault")) {
+                  target.src = target.src.replace("maxresdefault", "hqdefault");
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted-foreground/20">
+              <div className="text-center">
+                <Play className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">{getPlatformName(videoInfo.platform)}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Play button overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Play className="w-8 h-8 text-black ml-1" />
+            </div>
+          </div>
+          
+          {/* Platform badge */}
+          <div className="absolute top-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+            <ExternalLink className="w-3 h-3" />
+            {getPlatformName(videoInfo.platform)}
+          </div>
+        </div>
+      );
+    }
+
+    // Regular image or uploaded video
+    const isUploadedVideo = post.image_url.includes('.mp4') || post.image_url.includes('.webm') || post.image_url.includes('.mov');
+    
+    return (
+      <div 
+        className="relative aspect-square bg-muted cursor-pointer"
+        onDoubleClick={handleDoubleClick}
+      >
+        {isUploadedVideo ? (
+          <video
+            src={post.image_url}
+            controls
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <img
+            src={post.image_url}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -190,25 +269,8 @@ export const FlexUPostCard = ({ post, onLikeToggle, onPostUpdated, isLiked = fal
           </DropdownMenu>
         </div>
 
-        {/* Media - Required for FlexU */}
-        <div 
-          className="relative aspect-square bg-muted cursor-pointer"
-          onDoubleClick={handleDoubleClick}
-        >
-          {post.image_url.includes('.mp4') || post.image_url.includes('.webm') || post.image_url.includes('.mov') ? (
-            <video
-              src={post.image_url}
-              controls
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <img
-              src={post.image_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          )}
-        </div>
+        {/* Media */}
+        {renderMedia()}
 
         {/* Actions */}
         <div className="p-3 space-y-2">
