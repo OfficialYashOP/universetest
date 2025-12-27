@@ -11,7 +11,8 @@ import {
   MapPin,
   ShoppingBag,
   Briefcase,
-  Compass
+  EyeOff,
+  Image
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,8 +23,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/logo.png";
 
 const navItems = [
-  { icon: Home, label: "Feed", href: "/dashboard" },
-  { icon: Compass, label: "Explore", href: "/explore" },
+  { icon: EyeOff, label: "OffRecord", href: "/offrecord" },
+  { icon: Image, label: "FlexU", href: "/flexu" },
   { icon: Users, label: "Community", href: "/community" },
   { icon: MessageSquare, label: "Messages", href: "/messages" },
   { icon: Building2, label: "Housing", href: "/housing" },

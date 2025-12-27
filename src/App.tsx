@@ -26,6 +26,8 @@ import MarketplacePage from "./pages/MarketplacePage";
 import JobsPage from "./pages/JobsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ExplorePage from "./pages/ExplorePage";
+import OffRecordPage from "./pages/OffRecordPage";
+import FlexUPage from "./pages/FlexUPage";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import CareersPage from "./pages/CareersPage";
@@ -124,6 +126,16 @@ const App = () => (
               <Route path="/explore" element={
                 <ProtectedRoute>
                   <ExplorePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/offrecord" element={
+                <ProtectedRoute>
+                  <OffRecordPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/flexu" element={
+                <ProtectedRoute>
+                  <FlexUPage />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
