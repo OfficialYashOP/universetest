@@ -28,6 +28,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ExplorePage from "./pages/ExplorePage";
 import OffRecordPage from "./pages/OffRecordPage";
 import FlexUPage from "./pages/FlexUPage";
+import ChatPage from "./pages/ChatPage";
+import TrendingPage from "./pages/TrendingPage";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import CareersPage from "./pages/CareersPage";

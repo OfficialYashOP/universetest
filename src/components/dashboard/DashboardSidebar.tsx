@@ -1,8 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
-  Home, 
   Users, 
-  MessageSquare, 
   Building2, 
   BookOpen, 
   Store, 
@@ -12,7 +10,9 @@ import {
   ShoppingBag,
   Briefcase,
   EyeOff,
-  Image
+  Image,
+  MessageCircle,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,8 +25,8 @@ import logo from "@/assets/logo.png";
 const navItems = [
   { icon: EyeOff, label: "OffRecord", href: "/offrecord" },
   { icon: Image, label: "FlexU", href: "/flexu" },
-  { icon: Users, label: "Community", href: "/community" },
-  { icon: MessageSquare, label: "Messages", href: "/messages" },
+  { icon: TrendingUp, label: "Trending", href: "/trending" },
+  { icon: MessageCircle, label: "Chat", href: "/chat" },
   { icon: Building2, label: "Housing", href: "/housing" },
   { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
   { icon: Briefcase, label: "Jobs", href: "/jobs" },
