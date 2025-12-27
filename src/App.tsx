@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { UniversityThemeProvider } from "@/hooks/useUniversityTheme";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -52,13 +53,14 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <UniversityThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
+    <ThemeProvider defaultTheme="dark" storageKey="sympan-theme" attribute="class">
+      <AuthProvider>
+        <UniversityThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
@@ -177,6 +179,7 @@ const App = () => (
         </TooltipProvider>
       </UniversityThemeProvider>
     </AuthProvider>
+  </ThemeProvider>
   </QueryClientProvider>
 );
 
