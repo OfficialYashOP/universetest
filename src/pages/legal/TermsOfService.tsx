@@ -36,7 +36,7 @@ const TermsOfService = () => {
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <p className="text-muted-foreground">To use Sympan, you must:</p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                <li>Be a current or former university student, staff member, or approved service provider</li>
+                <li>Be a current or former university student or staff member</li>
                 <li>Complete the verification process to prove your university affiliation</li>
                 <li>Be at least 18 years old (or the age of majority in your jurisdiction)</li>
                 <li>Have the legal capacity to enter into a binding agreement</li>
