@@ -1408,6 +1408,78 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_applications: {
+        Row: {
+          aadhaar_back_url: string | null
+          aadhaar_front_url: string | null
+          admin_notes: string | null
+          branch: string | null
+          college_id_back_url: string | null
+          college_id_front_url: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          fee_receipt_url: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          roll_number: string | null
+          selfie_url: string | null
+          status: string
+          university_id: string | null
+          updated_at: string | null
+          user_id: string
+          year_of_study: string | null
+        }
+        Insert: {
+          aadhaar_back_url?: string | null
+          aadhaar_front_url?: string | null
+          admin_notes?: string | null
+          branch?: string | null
+          college_id_back_url?: string | null
+          college_id_front_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          fee_receipt_url?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roll_number?: string | null
+          selfie_url?: string | null
+          status?: string
+          university_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          year_of_study?: string | null
+        }
+        Update: {
+          aadhaar_back_url?: string | null
+          aadhaar_front_url?: string | null
+          admin_notes?: string | null
+          branch?: string | null
+          college_id_back_url?: string | null
+          college_id_front_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          fee_receipt_url?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roll_number?: string | null
+          selfie_url?: string | null
+          status?: string
+          university_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          year_of_study?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1418,6 +1490,10 @@ export type Database = {
           new_role: Database["public"]["Enums"]["app_role"]
           target_user_id: string
         }
+        Returns: undefined
+      }
+      approve_verification_application: {
+        Args: { application_id: string }
         Returns: undefined
       }
       can_edit_profile_field: {
@@ -1549,6 +1625,10 @@ export type Database = {
       is_conversation_participant: {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean
+      }
+      reject_verification_application: {
+        Args: { application_id: string; rejection_notes?: string }
+        Returns: undefined
       }
     }
     Enums: {

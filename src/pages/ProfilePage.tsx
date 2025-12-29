@@ -560,6 +560,78 @@ const ProfilePage = () => {
           </div>
         )}
 
+        {/* Verification Status Card */}
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {profile?.is_verified ? (
+                <>
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <BadgeCheck className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      Verified Account
+                      <Badge className="bg-primary/20 text-primary border-0">Blue Tick</Badge>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your identity has been verified
+                    </p>
+                  </div>
+                </>
+              ) : profile?.verification_status === "pending" ? (
+                <>
+                  <div className="p-2.5 bg-amber-500/10 rounded-xl">
+                    <Clock className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      Verification Pending
+                      <Badge variant="outline" className="border-amber-500/50 text-amber-500">Under Review</Badge>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your verification application is being reviewed
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-2.5 bg-muted rounded-xl">
+                    <Shield className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Not Verified</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Get a blue tick to show you're a trusted member
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {!profile?.is_verified && profile?.verification_status !== "pending" && (
+              <Button
+                onClick={() => navigate("/apply-verification")}
+                variant="outline"
+                className="gap-2 transition-all duration-300 hover:scale-105 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+              >
+                <BadgeCheck className="w-4 h-4" />
+                Apply for Verification
+              </Button>
+            )}
+            
+            {profile?.verification_status === "pending" && (
+              <Button
+                onClick={() => navigate("/apply-verification")}
+                variant="ghost"
+                size="sm"
+              >
+                View Status
+              </Button>
+            )}
+          </div>
+        </div>
+
         {/* Tabs - Only Profile and Settings */}
         <Tabs defaultValue={defaultTab === "verification" ? "profile" : defaultTab} className="space-y-6">
           <TabsList className="bg-muted/50 backdrop-blur-sm p-1 rounded-xl border border-border/50">

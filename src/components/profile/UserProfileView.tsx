@@ -22,10 +22,12 @@ import {
   UserMinus,
   MessageCircle,
   ArrowLeft,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useProfile } from "@/hooks/useProfile";
+import { UnverifiedWarningDialog } from "@/components/verification/UnverifiedWarningDialog";
 
 interface UserProfile {
   id: string;
@@ -77,6 +79,10 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
   const [isStartingChat, setIsStartingChat] = useState(false);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  
+  // Warning dialog states
+  const [showFollowWarning, setShowFollowWarning] = useState(false);
+  const [showMessageWarning, setShowMessageWarning] = useState(false);
 
   const isOwnProfile = user?.id === userId;
 
@@ -293,44 +299,66 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
             </div>
             
             {!isOwnProfile && user && (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={isFollowing ? "outline" : "default"}
-                  onClick={handleFollow}
-                  disabled={isFollowLoading}
-                  className="gap-1"
-                >
-                  {isFollowLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : isFollowing ? (
-                    <>
-                      <UserMinus className="w-4 h-4" />
-                      Unfollow
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      Follow
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="gap-1"
-                  onClick={handleStartChat}
-                  disabled={isStartingChat}
-                >
-                  {isStartingChat ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <MessageCircle className="w-4 h-4" />
-                      Message
-                    </>
-                  )}
-                </Button>
+              <div className="flex flex-col gap-2">
+                {/* Not Verified Badge */}
+                {!profile.is_verified && (
+                  <Badge variant="outline" className="w-fit gap-1 text-muted-foreground border-muted-foreground/30">
+                    <ShieldAlert className="w-3 h-3" />
+                    Not Verified
+                  </Badge>
+                )}
+                
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant={isFollowing ? "outline" : "default"}
+                    onClick={() => {
+                      if (!profile.is_verified && !isFollowing) {
+                        setShowFollowWarning(true);
+                      } else {
+                        handleFollow();
+                      }
+                    }}
+                    disabled={isFollowLoading}
+                    className="gap-1"
+                  >
+                    {isFollowLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isFollowing ? (
+                      <>
+                        <UserMinus className="w-4 h-4" />
+                        Unfollow
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        Follow
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="gap-1"
+                    onClick={() => {
+                      if (!profile.is_verified) {
+                        setShowMessageWarning(true);
+                      } else {
+                        handleStartChat();
+                      }
+                    }}
+                    disabled={isStartingChat}
+                  >
+                    {isStartingChat ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <MessageCircle className="w-4 h-4" />
+                        Message
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
 
