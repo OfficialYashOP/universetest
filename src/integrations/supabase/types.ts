@@ -188,6 +188,38 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_typing_status: {
+        Row: {
+          id: string
+          is_typing: boolean
+          room_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_typing?: boolean
+          room_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_typing?: boolean
+          room_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_typing_status_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_groups: {
         Row: {
           created_at: string | null
@@ -438,6 +470,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      identity_key_history: {
+        Row: {
+          created_at: string
+          id: string
+          identity_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identity_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identity_key?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       job_listings: {
         Row: {
@@ -785,6 +838,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      message_receipts: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          read_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          read_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          read_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_receipts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
