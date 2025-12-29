@@ -207,10 +207,14 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
 
     try {
       // Check if chat already exists
-      const { data: existingParticipations } = await supabase
+      const { data: existingParticipations, error: fetchError } = await supabase
         .from("chat_participants")
         .select("room_id")
         .eq("user_id", user.id);
+
+      if (fetchError) {
+        console.error("Error fetching participations:", fetchError);
+      }
 
       const roomIds = existingParticipations?.map(p => p.room_id) || [];
 
@@ -237,20 +241,29 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
         .single();
 
       if (roomError || !newRoom) {
-        toast({ title: "Failed to start chat", variant: "destructive" });
+        console.error("Error creating chat room:", roomError);
+        toast({ title: "Failed to create chat room", variant: "destructive" });
         setIsStartingChat(false);
         return;
       }
 
-      // Add participants
-      await supabase.from("chat_participants").insert([
+      // Add both participants in a single insert
+      const { error: participantError } = await supabase.from("chat_participants").insert([
         { room_id: newRoom.id, user_id: user.id },
         { room_id: newRoom.id, user_id: userId },
       ]);
 
+      if (participantError) {
+        console.error("Error adding participants:", participantError);
+        toast({ title: "Failed to add chat participants", variant: "destructive" });
+        setIsStartingChat(false);
+        return;
+      }
+
       // Navigate to chat page with the new room
       navigate(`/chat?room=${newRoom.id}`);
     } catch (error) {
+      console.error("Error starting chat:", error);
       toast({ title: "Failed to start chat", variant: "destructive" });
     } finally {
       setIsStartingChat(false);
