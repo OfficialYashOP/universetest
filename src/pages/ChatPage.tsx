@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Send, Loader2, Lock, Search, Plus, ArrowLeft, MoreVertical, Users } from "lucide-react";
+import { Send, Loader2, Lock, Search, Plus, ArrowLeft, Users, Shield, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,16 @@ import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { cn } from "@/lib/utils";
+import { 
+  initializeE2EE, 
+  isE2EEReady, 
+  encryptChatMessage, 
+  decryptChatMessage,
+  getSafetyNumber 
+} from "@/lib/e2ee";
+import { Badge } from "@/components/ui/badge";
 
-// Simple encryption utilities
+// Simple encryption utilities for backward compatibility
 const generateKey = async (): Promise<CryptoKey> => {
   return await crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },

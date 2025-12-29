@@ -288,6 +288,59 @@ export type Database = {
           },
         ]
       }
+      e2ee_sessions: {
+        Row: {
+          chain_key_receive: string | null
+          chain_key_send: string | null
+          created_at: string
+          id: string
+          peer_id: string
+          receive_counter: number
+          room_id: string
+          root_key: string | null
+          send_counter: number
+          session_data: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chain_key_receive?: string | null
+          chain_key_send?: string | null
+          created_at?: string
+          id?: string
+          peer_id: string
+          receive_counter?: number
+          room_id: string
+          root_key?: string | null
+          send_counter?: number
+          session_data: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chain_key_receive?: string | null
+          chain_key_send?: string | null
+          created_at?: string
+          id?: string
+          peer_id?: string
+          receive_counter?: number
+          room_id?: string
+          root_key?: string | null
+          send_counter?: number
+          session_data?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "e2ee_sessions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -1390,6 +1443,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_key_bundles: {
+        Row: {
+          created_at: string
+          id: string
+          identity_key: string
+          signed_prekey: string
+          signed_prekey_id: number
+          signed_prekey_signature: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identity_key: string
+          signed_prekey: string
+          signed_prekey_id?: number
+          signed_prekey_signature: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identity_key?: string
+          signed_prekey?: string
+          signed_prekey_id?: number
+          signed_prekey_signature?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_prekeys: {
+        Row: {
+          created_at: string
+          id: string
+          prekey: string
+          prekey_id: number
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prekey: string
+          prekey_id: number
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prekey?: string
+          prekey_id?: number
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1510,6 +1623,13 @@ export type Database = {
       check_username_available: {
         Args: { check_username: string }
         Returns: boolean
+      }
+      claim_prekey: {
+        Args: { target_user_id: string }
+        Returns: {
+          prekey: string
+          prekey_id: number
+        }[]
       }
       get_admin_profiles_filtered: {
         Args: { search_term?: string }
