@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Send, Loader2, Lock, Search, Plus, ArrowLeft, MoreVertical } from "lucide-react";
+import { Send, Loader2, Lock, Search, Plus, ArrowLeft, MoreVertical, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +106,7 @@ const ChatPage = () => {
   const roomIdFromUrl = searchParams.get("room");
   
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [followedUsers, setFollowedUsers] = useState<any[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -115,11 +116,13 @@ const ChatPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
+  const [startingChatWith, setStartingChatWith] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     initializeEncryption();
     fetchRooms();
+    fetchFollowedUsers();
   }, [user?.id]);
 
   // Handle room selection from URL query param
@@ -255,6 +258,29 @@ const ChatPage = () => {
 
     setRooms(roomsWithParticipants);
     setLoading(false);
+  };
+
+  const fetchFollowedUsers = async () => {
+    if (!user) return;
+
+    // Get users the current user is following
+    const { data: followingData } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id);
+
+    if (!followingData?.length) {
+      setFollowedUsers([]);
+      return;
+    }
+
+    const followingIds = followingData.map(f => f.following_id);
+
+    // Get profiles of followed users
+    const { data: profiles } = await supabase
+      .rpc("get_messaging_profiles", { profile_ids: followingIds });
+
+    setFollowedUsers(profiles || []);
   };
 
   const fetchMessages = async (roomId: string) => {
@@ -394,6 +420,74 @@ const ChatPage = () => {
     fetchRooms();
   };
 
+  const handleStartChatWithUser = async (otherUserId: string) => {
+    if (!user) return;
+    setStartingChatWith(otherUserId);
+
+    try {
+      // Check if chat already exists
+      const { data: existingParticipations } = await supabase
+        .from("chat_participants")
+        .select("room_id")
+        .eq("user_id", user.id);
+
+      const roomIds = existingParticipations?.map(p => p.room_id) || [];
+
+      if (roomIds.length > 0) {
+        const { data: otherParticipations } = await supabase
+          .from("chat_participants")
+          .select("room_id")
+          .eq("user_id", otherUserId)
+          .in("room_id", roomIds);
+
+        if (otherParticipations?.length) {
+          // Chat already exists
+          const existingRoom = rooms.find(r => r.id === otherParticipations[0].room_id);
+          if (existingRoom) {
+            setSelectedRoom(existingRoom);
+            setStartingChatWith(null);
+            return;
+          }
+        }
+      }
+
+      // Create new chat
+      const { data: newRoom, error: roomError } = await supabase
+        .from("chat_rooms")
+        .insert({ created_by: user.id })
+        .select()
+        .single();
+
+      if (roomError || !newRoom) {
+        toast({ title: "Failed to create chat", variant: "destructive" });
+        setStartingChatWith(null);
+        return;
+      }
+
+      // Add participants
+      await supabase.from("chat_participants").insert([
+        { room_id: newRoom.id, user_id: user.id },
+        { room_id: newRoom.id, user_id: otherUserId },
+      ]);
+
+      await fetchRooms();
+      
+      // Find and select the new room
+      const updatedRooms = await supabase
+        .from("chat_participants")
+        .select("room_id")
+        .eq("room_id", newRoom.id);
+      
+      if (updatedRooms.data) {
+        fetchRoomById(newRoom.id);
+      }
+    } catch (error) {
+      toast({ title: "Failed to start chat", variant: "destructive" });
+    }
+    
+    setStartingChatWith(null);
+  };
+
   const getInitials = (name: string | null) => {
     if (!name) return "?";
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -440,41 +534,85 @@ const ChatPage = () => {
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-            ) : rooms.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No chats yet</p>
-                <Button 
-                  variant="link" 
-                  className="mt-2"
-                  onClick={() => setShowNewChat(true)}
-                >
-                  Start a conversation
-                </Button>
-              </div>
             ) : (
-              rooms.map(room => (
-                <button
-                  key={room.id}
-                  onClick={() => setSelectedRoom(room)}
-                  className={cn(
-                    "w-full p-4 flex items-center gap-3 hover:bg-muted transition-colors",
-                    selectedRoom?.id === room.id && "bg-muted"
-                  )}
-                >
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={getChatAvatar(room)} />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {getInitials(getChatName(room))}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="font-semibold truncate">{getChatName(room)}</p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {room.lastMessage?.content || "No messages yet"}
-                    </p>
+              <>
+                {/* Existing chat rooms */}
+                {rooms.map(room => (
+                  <button
+                    key={room.id}
+                    onClick={() => setSelectedRoom(room)}
+                    className={cn(
+                      "w-full p-4 flex items-center gap-3 hover:bg-muted transition-colors",
+                      selectedRoom?.id === room.id && "bg-muted"
+                    )}
+                  >
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={getChatAvatar(room)} />
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        {getInitials(getChatName(room))}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="font-semibold truncate">{getChatName(room)}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {room.lastMessage?.content || "No messages yet"}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+
+                {/* Followed users without existing chats */}
+                {followedUsers.filter(fu => 
+                  !rooms.some(r => r.participants?.some(p => p.user_id === fu.id))
+                ).length > 0 && (
+                  <>
+                    <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t border-border mt-2">
+                      <Users className="w-3 h-3 inline mr-1" />
+                      Following
+                    </div>
+                    {followedUsers
+                      .filter(fu => !rooms.some(r => r.participants?.some(p => p.user_id === fu.id)))
+                      .map(fu => (
+                        <button
+                          key={fu.id}
+                          onClick={() => handleStartChatWithUser(fu.id)}
+                          disabled={startingChatWith === fu.id}
+                          className="w-full p-4 flex items-center gap-3 hover:bg-muted transition-colors"
+                        >
+                          <Avatar className="w-12 h-12">
+                            <AvatarImage src={fu.avatar_url || ""} />
+                            <AvatarFallback className="bg-secondary text-secondary-foreground">
+                              {getInitials(fu.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="font-semibold truncate">{fu.full_name || "User"}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              Tap to start a chat
+                            </p>
+                          </div>
+                          {startingChatWith === fu.id && (
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          )}
+                        </button>
+                      ))}
+                  </>
+                )}
+
+                {/* Empty state */}
+                {rooms.length === 0 && followedUsers.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No chats yet</p>
+                    <Button 
+                      variant="link" 
+                      className="mt-2"
+                      onClick={() => setShowNewChat(true)}
+                    >
+                      Start a conversation
+                    </Button>
                   </div>
-                </button>
-              ))
+                )}
+              </>
             )}
           </ScrollArea>
         </div>
