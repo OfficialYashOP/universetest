@@ -42,6 +42,7 @@ import LegalDisclaimer from "./pages/legal/LegalDisclaimer";
 import NotFound from "./pages/NotFound";
 import RequestUniversityPage from "./pages/RequestUniversityPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import VerificationApplicationPage from "./pages/VerificationApplicationPage";
 
 // Auth Pages
 import StudentAuthPage from "./pages/auth/StudentAuthPage";
@@ -159,6 +160,11 @@ const App = () => (
               <Route path="/user/:userId" element={
                 <ProtectedRoute>
                   <UserProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/apply-verification" element={
+                <ProtectedRoute>
+                  <VerificationApplicationPage />
                 </ProtectedRoute>
               } />
               
