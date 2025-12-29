@@ -6,6 +6,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import {
   performX3DH,
+  performDH,
   generateKeyPair,
   serializeKeyPair,
   deserializeKeyPair,
@@ -22,6 +23,7 @@ import {
 import {
   fetchPublicKeyBundle,
   getOwnIdentityKeyPair,
+  getOwnSignedPreKeyPair,
   type PublicKeyBundle,
 } from './keyManager';
 
@@ -38,28 +40,32 @@ export async function establishSession(
   peerId: string,
   roomId: string
 ): Promise<SessionState | null> {
+  console.log('[SessionManager] Establishing session:', { userId, peerId, roomId });
+  
   // Check for existing session
   const existingSession = loadSession(userId, peerId, roomId);
   if (existingSession) {
+    console.log('[SessionManager] Using existing session');
     return existingSession;
   }
   
   // Get our identity key
   const ourIdentityKey = getOwnIdentityKeyPair(userId);
   if (!ourIdentityKey) {
-    console.error('No identity key found');
+    console.error('[SessionManager] No identity key found');
     return null;
   }
   
   // Fetch peer's public key bundle
   const peerBundle = await fetchPublicKeyBundle(peerId);
   if (!peerBundle) {
-    console.error('Failed to fetch peer key bundle');
+    console.error('[SessionManager] Failed to fetch peer key bundle');
     return null;
   }
   
   // Generate ephemeral key for this session
   const ephemeralKey = generateKeyPair();
+  console.log('[SessionManager] Generated ephemeral key');
   
   // Perform X3DH key agreement
   const sharedSecret = await performX3DH(
@@ -70,11 +76,13 @@ export async function establishSession(
     peerBundle.oneTimePreKey ? decodeBase64(peerBundle.oneTimePreKey) : undefined
   );
   
+  console.log('[SessionManager] X3DH completed');
+  
   // Initialize session state
   const session: SessionState = {
     rootKey: sharedSecret,
     sendingChainKey: sharedSecret.slice(0, 32),
-    receivingChainKey: new Uint8Array(32), // Will be set when receiving first message
+    receivingChainKey: sharedSecret.slice(0, 32), // Initialize with same key
     sendCounter: 0,
     receiveCounter: 0,
     theirIdentityKey: decodeBase64(peerBundle.identityKey),
@@ -84,6 +92,7 @@ export async function establishSession(
   
   // Save session locally
   saveSession(userId, peerId, roomId, session);
+  console.log('[SessionManager] Session saved locally');
   
   // Optionally save session state to server (encrypted)
   await syncSessionToServer(userId, peerId, roomId, session);
@@ -101,10 +110,11 @@ export async function encryptForSession(
   let session = loadSession(userId, peerId, roomId);
   
   if (!session) {
+    console.log('[SessionManager] No session found, establishing new one...');
     // Try to establish a new session
     session = await establishSession(userId, peerId, roomId);
     if (!session) {
-      console.error('Failed to establish session');
+      console.error('[SessionManager] Failed to establish session');
       return null;
     }
   }
@@ -114,6 +124,8 @@ export async function encryptForSession(
   
   // Encrypt the message
   const { ciphertext, iv } = await encryptMessage(plaintext, messageKey);
+  
+  const currentCounter = session.sendCounter;
   
   // Update session state
   const newSession: SessionState = {
@@ -129,13 +141,15 @@ export async function encryptForSession(
   const result: EncryptedMessage = {
     ciphertext,
     iv,
-    messageNumber: session.sendCounter,
+    messageNumber: currentCounter,
   };
   
-  if (session.sendCounter === 0) {
+  if (currentCounter === 0) {
     result.senderEphemeralKey = session.ourEphemeralKey.publicKey;
+    console.log('[SessionManager] Including ephemeral key in first message');
   }
   
+  console.log('[SessionManager] Message encrypted, counter:', currentCounter);
   return result;
 }
 
@@ -146,9 +160,12 @@ export async function decryptFromSession(
   roomId: string,
   encrypted: EncryptedMessage
 ): Promise<string | null> {
+  console.log('[SessionManager] Decrypting message, number:', encrypted.messageNumber);
+  
   let session = loadSession(userId, peerId, roomId);
   
   if (!session && encrypted.senderEphemeralKey) {
+    console.log('[SessionManager] First message - establishing session as receiver');
     // This is the first message - we need to complete X3DH from the receiver side
     session = await establishSessionAsReceiver(
       userId,
@@ -159,31 +176,57 @@ export async function decryptFromSession(
   }
   
   if (!session) {
-    console.error('No session found and cannot establish');
+    console.error('[SessionManager] No session found and cannot establish');
     return null;
   }
   
   try {
-    // Ratchet the receiving chain key
-    const { newChainKey, messageKey } = await ratchetChainKey(
-      session.receivingChainKey.length > 0 ? session.receivingChainKey : session.rootKey
-    );
+    // Determine which chain key to use based on message number
+    const expectedCounter = session.receiveCounter;
+    console.log('[SessionManager] Expected counter:', expectedCounter, 'Got:', encrypted.messageNumber);
+    
+    // Ratchet the receiving chain key to the correct position
+    let chainKey = session.receivingChainKey;
+    let messageKey: Uint8Array;
+    
+    // For the first message or matching counter, just ratchet once
+    if (encrypted.messageNumber === expectedCounter) {
+      const ratchetResult = await ratchetChainKey(chainKey);
+      messageKey = ratchetResult.messageKey;
+      chainKey = ratchetResult.newChainKey;
+    } else if (encrypted.messageNumber > expectedCounter) {
+      // Need to skip some messages (out of order delivery)
+      console.log('[SessionManager] Skipping', encrypted.messageNumber - expectedCounter, 'messages');
+      for (let i = expectedCounter; i <= encrypted.messageNumber; i++) {
+        const ratchetResult = await ratchetChainKey(chainKey);
+        messageKey = ratchetResult.messageKey;
+        chainKey = ratchetResult.newChainKey;
+      }
+    } else {
+      // Message from the past - we can't decrypt without stored keys
+      console.warn('[SessionManager] Received old message, counter:', encrypted.messageNumber);
+      // Try with current key anyway
+      const ratchetResult = await ratchetChainKey(session.receivingChainKey);
+      messageKey = ratchetResult.messageKey;
+      chainKey = ratchetResult.newChainKey;
+    }
     
     // Decrypt the message
-    const plaintext = await decryptMessage(encrypted.ciphertext, encrypted.iv, messageKey);
+    const plaintext = await decryptMessage(encrypted.ciphertext, encrypted.iv, messageKey!);
     
     // Update session state
     const newSession: SessionState = {
       ...session,
-      receivingChainKey: newChainKey,
-      receiveCounter: session.receiveCounter + 1,
+      receivingChainKey: chainKey,
+      receiveCounter: Math.max(session.receiveCounter, encrypted.messageNumber + 1),
     };
     
     saveSession(userId, peerId, roomId, newSession);
     
+    console.log('[SessionManager] Message decrypted successfully');
     return plaintext;
   } catch (error) {
-    console.error('Decryption failed:', error);
+    console.error('[SessionManager] Decryption failed:', error);
     return null;
   }
 }
@@ -195,34 +238,62 @@ async function establishSessionAsReceiver(
   roomId: string,
   senderEphemeralKey: string
 ): Promise<SessionState | null> {
+  console.log('[SessionManager] Establishing session as receiver');
+  
   const ourIdentityKey = getOwnIdentityKeyPair(userId);
-  if (!ourIdentityKey) return null;
+  if (!ourIdentityKey) {
+    console.error('[SessionManager] No identity key found');
+    return null;
+  }
+  
+  const ourSignedPreKey = getOwnSignedPreKeyPair(userId);
+  if (!ourSignedPreKey) {
+    console.error('[SessionManager] No signed prekey found');
+    return null;
+  }
   
   // Get sender's identity key from server
   const senderBundle = await fetchPublicKeyBundle(peerId);
-  if (!senderBundle) return null;
+  if (!senderBundle) {
+    console.error('[SessionManager] Failed to fetch sender bundle');
+    return null;
+  }
   
   // Compute shared secret (receiver side of X3DH)
-  // Note: This is simplified - full implementation would use the signed pre-key secret
   const ephemeralPubKey = decodeBase64(senderEphemeralKey);
+  const senderIdentityKey = decodeBase64(senderBundle.identityKey);
   
-  // DH with their ephemeral key
-  const dh1 = require('./crypto').performDH(ourIdentityKey.secretKey, ephemeralPubKey);
+  // DH1 = DH(SPKb, IKa) - our signed prekey with their identity
+  const dh1 = performDH(ourSignedPreKey.keyPair.secretKey, senderIdentityKey);
   
-  // For simplicity, use this as the root key
-  // In production, this should mirror the sender's X3DH computation
+  // DH2 = DH(IKb, EKa) - our identity with their ephemeral
+  const dh2 = performDH(ourIdentityKey.secretKey, ephemeralPubKey);
+  
+  // DH3 = DH(SPKb, EKa) - our signed prekey with their ephemeral
+  const dh3 = performDH(ourSignedPreKey.keyPair.secretKey, ephemeralPubKey);
+  
+  // Combine DH results (same as sender but different order)
+  const combined = new Uint8Array(dh1.length + dh2.length + dh3.length);
+  combined.set(dh1, 0);
+  combined.set(dh2, dh1.length);
+  combined.set(dh3, dh1.length + dh2.length);
+  
+  // Use combined result as shared secret
+  const sharedSecret = combined.slice(0, 32);
+  
   const session: SessionState = {
-    rootKey: dh1,
-    sendingChainKey: dh1.slice(0, 32),
-    receivingChainKey: dh1.slice(0, 32),
+    rootKey: sharedSecret,
+    sendingChainKey: sharedSecret.slice(0, 32),
+    receivingChainKey: sharedSecret.slice(0, 32),
     sendCounter: 0,
     receiveCounter: 0,
-    theirIdentityKey: decodeBase64(senderBundle.identityKey),
+    theirIdentityKey: senderIdentityKey,
     theirSignedPreKey: decodeBase64(senderBundle.signedPreKey),
     ourEphemeralKey: serializeKeyPair(generateKeyPair()),
   };
   
   saveSession(userId, peerId, roomId, session);
+  console.log('[SessionManager] Session established as receiver');
   return session;
 }
 
@@ -257,7 +328,7 @@ async function syncSessionToServer(
     });
   
   if (error) {
-    console.error('Failed to sync session:', error);
+    console.error('[SessionManager] Failed to sync session:', error);
   }
 }
 
@@ -270,6 +341,7 @@ export function hasSession(userId: string, peerId: string, roomId: string): bool
 export function clearSession(userId: string, peerId: string, roomId: string): void {
   const key = `e2ee_sessions_${userId}_${roomId}_${peerId}`;
   localStorage.removeItem(key);
+  console.log('[SessionManager] Session cleared:', key);
 }
 
 // Clear all sessions for a user
@@ -280,4 +352,5 @@ export function clearAllSessions(userId: string): void {
       localStorage.removeItem(key);
     }
   }
+  console.log('[SessionManager] All sessions cleared for user:', userId);
 }

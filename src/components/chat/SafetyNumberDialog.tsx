@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Copy, Check, AlertTriangle } from "lucide-react";
+import { Shield, Copy, Check, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getSafetyNumber } from "@/lib/e2ee";
+import { getSafetyNumber, refreshKeys } from "@/lib/e2ee";
 import { useToast } from "@/hooks/use-toast";
 
 interface SafetyNumberDialogProps {
@@ -27,7 +27,10 @@ export function SafetyNumberDialog({
   peerName,
 }: SafetyNumberDialogProps) {
   const [safetyNumber, setSafetyNumber] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [canRefresh, setCanRefresh] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -39,9 +42,24 @@ export function SafetyNumberDialog({
 
   const loadSafetyNumber = async () => {
     setLoading(true);
-    const number = await getSafetyNumber(userId, peerId);
-    setSafetyNumber(number);
+    setError(null);
+    const result = await getSafetyNumber(userId, peerId);
+    setSafetyNumber(result.safetyNumber);
+    setError(result.error || null);
+    setCanRefresh(result.canRefresh || false);
     setLoading(false);
+  };
+
+  const handleRefreshKeys = async () => {
+    setRefreshing(true);
+    const success = await refreshKeys(userId);
+    if (success) {
+      toast({ title: "Encryption keys refreshed" });
+      await loadSafetyNumber();
+    } else {
+      toast({ title: "Failed to refresh keys", variant: "destructive" });
+    }
+    setRefreshing(false);
   };
 
   const handleCopy = async () => {
@@ -69,7 +87,8 @@ export function SafetyNumberDialog({
         <div className="space-y-4">
           {loading ? (
             <div className="h-24 flex items-center justify-center">
-              <div className="animate-pulse text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Loading safety number...
               </div>
             </div>
@@ -108,8 +127,30 @@ export function SafetyNumberDialog({
               </Button>
             </>
           ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              Unable to generate safety number. Please try again later.
+            <div className="text-center py-4 space-y-4">
+              <p className="text-muted-foreground">
+                {error || "Unable to generate safety number. Please try again later."}
+              </p>
+              
+              {canRefresh && (
+                <Button
+                  variant="outline"
+                  onClick={handleRefreshKeys}
+                  disabled={refreshing}
+                >
+                  {refreshing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh Encryption Keys
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </div>
