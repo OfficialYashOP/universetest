@@ -310,7 +310,7 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
               <div className="flex flex-col gap-2">
                 {/* Not Verified Badge - only show if not pending */}
                 {!profile.is_verified && profile.verification_status !== "pending" && (
-                  <Badge variant="outline" className="w-fit gap-1 text-muted-foreground border-muted-foreground/30">
+                  <Badge variant="outline" className="w-fit gap-1 text-destructive border-destructive/50 bg-destructive/10">
                     <ShieldAlert className="w-3 h-3" />
                     Not Verified
                   </Badge>
