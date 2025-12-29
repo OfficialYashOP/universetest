@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LogOut,
   BadgeCheck,
-  MapPin,
   Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +24,7 @@ import marketplaceIcon from "@/assets/icons/marketplace.jpg";
 import jobsIcon from "@/assets/icons/jobs.jpg";
 import resourcesIcon from "@/assets/icons/resources.jpg";
 import servicesIcon from "@/assets/icons/services.jpg";
+import lpuCampusAssistIcon from "@/assets/icons/lpu-campus-assist.jpg";
 
 const navItems = [
   { icon: offrecordIcon, label: "OffRecord", href: "/offrecord" },
@@ -36,7 +36,7 @@ const navItems = [
   { icon: jobsIcon, label: "Jobs", href: "/jobs" },
   { icon: resourcesIcon, label: "Resources", href: "/academic-resources" },
   { icon: servicesIcon, label: "Services", href: "/local-services" },
-  { icon: null, label: "LPU Campus Assist", href: "/lpu", highlight: true, useLucide: true },
+  { icon: lpuCampusAssistIcon, label: "LPU Campus Assist", href: "/lpu", highlight: true },
 ];
 
 interface DashboardSidebarProps {
@@ -105,19 +105,19 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
                 (item as any).highlight && !isActive && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
               )}
             >
-              {(item as any).useLucide ? (
-                <MapPin className="w-5 h-5" />
-              ) : (
-                <div className="relative w-8 h-8 rounded-lg overflow-hidden transition-transform duration-200 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20">
-                  <img 
-                    src={item.icon as string} 
-                    alt={item.label}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+              <div className={cn(
+                "relative w-8 h-8 rounded-lg overflow-hidden transition-all duration-300",
+                "group-hover:scale-110 group-hover:shadow-lg",
+                (item as any).highlight ? "group-hover:shadow-green-500/30" : "group-hover:shadow-primary/20"
+              )}>
+                <img 
+                  src={item.icon as string} 
+                  alt={item.label}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
               <span className="font-medium">{item.label}</span>
             </Link>
           );
