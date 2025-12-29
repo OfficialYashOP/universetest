@@ -3,7 +3,18 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LogOut,
   BadgeCheck,
-  Search
+  Search,
+  EyeOff,
+  Sparkles,
+  TrendingUp,
+  MessageCircle,
+  Home,
+  ShoppingBag,
+  Briefcase,
+  BookOpen,
+  Wrench,
+  MapPin,
+  LucideIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,29 +25,17 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSearchModal } from "@/components/search/UserSearchModal";
 import logo from "@/assets/logo.png";
 
-// Import custom icons
-import offrecordIcon from "@/assets/icons/offrecord.jpg";
-import flexuIcon from "@/assets/icons/flexu.jpg";
-import trendingIcon from "@/assets/icons/trending.jpg";
-import chatIcon from "@/assets/icons/chat.jpg";
-import housingIcon from "@/assets/icons/housing.jpg";
-import marketplaceIcon from "@/assets/icons/marketplace.jpg";
-import jobsIcon from "@/assets/icons/jobs.jpg";
-import resourcesIcon from "@/assets/icons/resources.jpg";
-import servicesIcon from "@/assets/icons/services.jpg";
-import lpuCampusAssistIcon from "@/assets/icons/lpu-campus-assist.jpg";
-
-const navItems = [
-  { icon: offrecordIcon, label: "OffRecord", href: "/offrecord" },
-  { icon: flexuIcon, label: "FlexU", href: "/flexu" },
-  { icon: trendingIcon, label: "Trending", href: "/trending" },
-  { icon: chatIcon, label: "Chat", href: "/chat" },
-  { icon: housingIcon, label: "Housing", href: "/housing" },
-  { icon: marketplaceIcon, label: "Marketplace", href: "/marketplace" },
-  { icon: jobsIcon, label: "Jobs", href: "/jobs" },
-  { icon: resourcesIcon, label: "Resources", href: "/academic-resources" },
-  { icon: servicesIcon, label: "Services", href: "/local-services" },
-  { icon: lpuCampusAssistIcon, label: "LPU Campus Assist", href: "/lpu", highlight: true },
+const navItems: { icon: LucideIcon; label: string; href: string; highlight?: boolean }[] = [
+  { icon: EyeOff, label: "OffRecord", href: "/offrecord" },
+  { icon: Sparkles, label: "FlexU", href: "/flexu" },
+  { icon: TrendingUp, label: "Trending", href: "/trending" },
+  { icon: MessageCircle, label: "Chat", href: "/chat" },
+  { icon: Home, label: "Housing", href: "/housing" },
+  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
+  { icon: Briefcase, label: "Jobs", href: "/jobs" },
+  { icon: BookOpen, label: "Resources", href: "/academic-resources" },
+  { icon: Wrench, label: "Services", href: "/local-services" },
+  { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
 ];
 
 interface DashboardSidebarProps {
@@ -105,19 +104,10 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
                 (item as any).highlight && !isActive && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
               )}
             >
-              <div className={cn(
-                "relative w-8 h-8 rounded-lg overflow-hidden transition-all duration-300",
-                "group-hover:scale-110 group-hover:shadow-lg",
-                (item as any).highlight ? "group-hover:shadow-green-500/30" : "group-hover:shadow-primary/20"
-              )}>
-                <img 
-                  src={item.icon as string} 
-                  alt={item.label}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
+              <item.icon className={cn(
+                "w-5 h-5 transition-transform duration-200 group-hover:scale-110",
+                item.highlight && "text-green-500"
+              )} />
               <span className="font-medium">{item.label}</span>
             </Link>
           );
