@@ -1595,6 +1595,7 @@ export type Database = {
           id: string
           is_verified: boolean
           university_id: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
           year_of_study: string
         }[]
       }
@@ -1609,6 +1610,7 @@ export type Database = {
           id: string
           is_verified: boolean
           university_id: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
           year_of_study: string
         }[]
       }
