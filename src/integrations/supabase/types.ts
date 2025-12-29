@@ -507,57 +507,6 @@ export type Database = {
         }
         Relationships: []
       }
-      job_listings: {
-        Row: {
-          company: string | null
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string
-          description: string | null
-          id: string
-          job_type: string | null
-          location: string | null
-          partner_id: string
-          pay: string | null
-          status: Database["public"]["Enums"]["listing_status"] | null
-          title: string
-          university_id: string
-          updated_at: string
-        }
-        Insert: {
-          company?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          job_type?: string | null
-          location?: string | null
-          partner_id: string
-          pay?: string | null
-          status?: Database["public"]["Enums"]["listing_status"] | null
-          title: string
-          university_id: string
-          updated_at?: string
-        }
-        Update: {
-          company?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          job_type?: string | null
-          location?: string | null
-          partner_id?: string
-          pay?: string | null
-          status?: Database["public"]["Enums"]["listing_status"] | null
-          title?: string
-          university_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       local_services: {
         Row: {
           address: string | null
@@ -923,48 +872,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      partners: {
-        Row: {
-          address: string | null
-          business_name: string
-          category: string
-          created_at: string
-          document_url: string | null
-          id: string
-          phone: string
-          serving_university_ids: string[] | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          address?: string | null
-          business_name: string
-          category: string
-          created_at?: string
-          document_url?: string | null
-          id?: string
-          phone: string
-          serving_university_ids?: string[] | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          address?: string | null
-          business_name?: string
-          category?: string
-          created_at?: string
-          document_url?: string | null
-          id?: string
-          phone?: string
-          serving_university_ids?: string[] | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       post_comments: {
         Row: {
