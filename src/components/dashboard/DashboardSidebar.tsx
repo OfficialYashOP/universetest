@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
-  Users, 
-  Building2, 
-  BookOpen, 
-  Store, 
   LogOut,
   BadgeCheck,
   MapPin,
-  ShoppingBag,
-  Briefcase,
-  EyeOff,
-  Image,
-  MessageCircle,
-  TrendingUp,
   Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,17 +15,28 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSearchModal } from "@/components/search/UserSearchModal";
 import logo from "@/assets/logo.png";
 
+// Import custom icons
+import offrecordIcon from "@/assets/icons/offrecord.jpg";
+import flexuIcon from "@/assets/icons/flexu.jpg";
+import trendingIcon from "@/assets/icons/trending.jpg";
+import chatIcon from "@/assets/icons/chat.jpg";
+import housingIcon from "@/assets/icons/housing.jpg";
+import marketplaceIcon from "@/assets/icons/marketplace.jpg";
+import jobsIcon from "@/assets/icons/jobs.jpg";
+import resourcesIcon from "@/assets/icons/resources.jpg";
+import servicesIcon from "@/assets/icons/services.jpg";
+
 const navItems = [
-  { icon: EyeOff, label: "OffRecord", href: "/offrecord" },
-  { icon: Image, label: "FlexU", href: "/flexu" },
-  { icon: TrendingUp, label: "Trending", href: "/trending" },
-  { icon: MessageCircle, label: "Chat", href: "/chat" },
-  { icon: Building2, label: "Housing", href: "/housing" },
-  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
-  { icon: Briefcase, label: "Jobs", href: "/jobs" },
-  { icon: BookOpen, label: "Resources", href: "/academic-resources" },
-  { icon: Store, label: "Services", href: "/local-services" },
-  { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
+  { icon: offrecordIcon, label: "OffRecord", href: "/offrecord" },
+  { icon: flexuIcon, label: "FlexU", href: "/flexu" },
+  { icon: trendingIcon, label: "Trending", href: "/trending" },
+  { icon: chatIcon, label: "Chat", href: "/chat" },
+  { icon: housingIcon, label: "Housing", href: "/housing" },
+  { icon: marketplaceIcon, label: "Marketplace", href: "/marketplace" },
+  { icon: jobsIcon, label: "Jobs", href: "/jobs" },
+  { icon: resourcesIcon, label: "Resources", href: "/academic-resources" },
+  { icon: servicesIcon, label: "Services", href: "/local-services" },
+  { icon: null, label: "LPU Campus Assist", href: "/lpu", highlight: true, useLucide: true },
 ];
 
 interface DashboardSidebarProps {
@@ -97,14 +98,26 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
               to={item.href}
               onClick={handleNavClick}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all group",
                 isActive 
                   ? "bg-primary/10 text-primary" 
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 (item as any).highlight && !isActive && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
               )}
             >
-              <item.icon className="w-5 h-5" />
+              {(item as any).useLucide ? (
+                <MapPin className="w-5 h-5" />
+              ) : (
+                <div className="relative w-8 h-8 rounded-lg overflow-hidden transition-transform duration-200 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20">
+                  <img 
+                    src={item.icon as string} 
+                    alt={item.label}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <span className="font-medium">{item.label}</span>
             </Link>
           );
