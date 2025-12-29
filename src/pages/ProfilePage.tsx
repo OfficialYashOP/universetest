@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { AccountSettings } from "@/components/profile/AccountSettings";
 import UniversityLogo from "@/components/university/UniversityLogo";
 import { supabase } from "@/integrations/supabase/client";
+import confetti from "canvas-confetti";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +43,8 @@ import {
   ImageIcon,
   Edit3,
   Trash2,
-  Sparkles
+  Sparkles,
+  PartyPopper
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
@@ -62,6 +64,8 @@ const ProfilePage = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [hasShownConfetti, setHasShownConfetti] = useState(false);
+  const [showCompletionBanner, setShowCompletionBanner] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +108,55 @@ const ProfilePage = () => {
     
     return { percentage, completed, total: fields.length, fields };
   }, [profile]);
+
+  // Confetti celebration when profile reaches 100%
+  const triggerConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
+      });
+    }, 250);
+  }, []);
+
+  // Watch for 100% completion
+  useEffect(() => {
+    if (profileCompletion.percentage === 100 && !hasShownConfetti && !loading) {
+      setHasShownConfetti(true);
+      setShowCompletionBanner(true);
+      triggerConfetti();
+      
+      toast({
+        title: "🎉 Profile Complete!",
+        description: "Congratulations! Your profile is now 100% complete.",
+      });
+
+      // Hide banner after 10 seconds
+      setTimeout(() => setShowCompletionBanner(false), 10000);
+    }
+  }, [profileCompletion.percentage, hasShownConfetti, loading, triggerConfetti, toast]);
 
   // Fetch user role
   useEffect(() => {
@@ -435,6 +488,33 @@ const ProfilePage = () => {
                   +{profileCompletion.fields.filter(f => !f.filled).length - 4} more
                 </Badge>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 100% Completion Celebration Banner */}
+        {showCompletionBanner && profileCompletion.percentage === 100 && (
+          <div className="bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-xl p-4 sm:p-5 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-primary to-purple-500 rounded-xl shadow-lg">
+                  <PartyPopper className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground">Profile Complete!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Awesome! Your profile is now 100% complete. You're all set!
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCompletionBanner(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </Button>
             </div>
           </div>
         )}
