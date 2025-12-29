@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import LoadingScreen from "@/components/LoadingScreen";
+import { VerificationReminderNotification } from "@/components/verification/VerificationReminderNotification";
 import logo from "@/assets/logo.png";
 
 interface DashboardLayoutProps {
@@ -65,6 +66,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <main className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
         {children}
       </main>
+
+      {/* Verification Reminder Notification */}
+      <VerificationReminderNotification />
     </div>
   );
 };

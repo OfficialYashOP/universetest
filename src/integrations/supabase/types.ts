@@ -987,6 +987,7 @@ export type Database = {
           username: string | null
           username_updated_at: string | null
           verification_document_url: string | null
+          verification_reminder_snooze_until: string | null
           verification_status:
             | Database["public"]["Enums"]["verification_status"]
             | null
@@ -1015,6 +1016,7 @@ export type Database = {
           username?: string | null
           username_updated_at?: string | null
           verification_document_url?: string | null
+          verification_reminder_snooze_until?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
@@ -1043,6 +1045,7 @@ export type Database = {
           username?: string | null
           username_updated_at?: string | null
           verification_document_url?: string | null
+          verification_reminder_snooze_until?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
