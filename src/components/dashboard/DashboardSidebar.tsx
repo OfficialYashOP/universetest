@@ -1,21 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { 
-  LogOut,
-  BadgeCheck,
-  Search,
-  EyeOff,
-  Sparkles,
-  TrendingUp,
-  MessageCircle,
-  Home,
-  ShoppingBag,
-  Briefcase,
-  BookOpen,
-  Wrench,
-  MapPin,
-  LucideIcon
-} from "lucide-react";
+import { LogOut, BadgeCheck, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -25,17 +10,29 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSearchModal } from "@/components/search/UserSearchModal";
 import logo from "@/assets/logo.png";
 
-const navItems: { icon: LucideIcon; label: string; href: string; highlight?: boolean }[] = [
-  { icon: EyeOff, label: "OffRecord", href: "/offrecord" },
-  { icon: Sparkles, label: "FlexU", href: "/flexu" },
-  { icon: TrendingUp, label: "Trending", href: "/trending" },
-  { icon: MessageCircle, label: "Chat", href: "/chat" },
-  { icon: Home, label: "Housing", href: "/housing" },
-  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
-  { icon: Briefcase, label: "Jobs", href: "/jobs" },
-  { icon: BookOpen, label: "Resources", href: "/academic-resources" },
-  { icon: Wrench, label: "Services", href: "/local-services" },
-  { icon: MapPin, label: "LPU Campus Assist", href: "/lpu", highlight: true },
+// Import custom PNG icons
+import offrecordIcon from "@/assets/icons/offrecord.png";
+import flexuIcon from "@/assets/icons/flexu.png";
+import trendingIcon from "@/assets/icons/trending.png";
+import chatIcon from "@/assets/icons/chat.png";
+import housingIcon from "@/assets/icons/housing.png";
+import marketplaceIcon from "@/assets/icons/marketplace.png";
+import jobsIcon from "@/assets/icons/jobs.png";
+import resourcesIcon from "@/assets/icons/resources.png";
+import servicesIcon from "@/assets/icons/services.png";
+import lpuCampusAssistIcon from "@/assets/icons/lpu-campus-assist.png";
+
+const navItems = [
+  { icon: offrecordIcon, label: "OffRecord", href: "/offrecord" },
+  { icon: flexuIcon, label: "FlexU", href: "/flexu" },
+  { icon: trendingIcon, label: "Trending", href: "/trending" },
+  { icon: chatIcon, label: "Chat", href: "/chat" },
+  { icon: housingIcon, label: "Housing", href: "/housing" },
+  { icon: marketplaceIcon, label: "Marketplace", href: "/marketplace" },
+  { icon: jobsIcon, label: "Jobs", href: "/jobs" },
+  { icon: resourcesIcon, label: "Resources", href: "/academic-resources" },
+  { icon: servicesIcon, label: "Services", href: "/local-services" },
+  { icon: lpuCampusAssistIcon, label: "LPU Campus Assist", href: "/lpu", highlight: true },
 ];
 
 interface DashboardSidebarProps {
@@ -81,7 +78,7 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
         {/* User Search Button */}
         <button
           onClick={() => setShowUserSearch(true)}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 cursor-pointer"
         >
           <Search className="w-5 h-5" />
           <span className="font-medium">Find People</span>
@@ -90,6 +87,7 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
         {navItems.map((item) => {
           const isActive = location.pathname === item.href || 
             (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+          const isHighlight = (item as any).highlight;
           
           return (
             <Link
@@ -97,23 +95,52 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
               to={item.href}
               onClick={handleNavClick}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all group",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer",
+                "will-change-transform",
                 isActive 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                (item as any).highlight && !isActive && "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                  ? "bg-primary/10 shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)]" 
+                  : "hover:bg-muted/60",
+                isHighlight && !isActive && "bg-green-500/5 hover:bg-green-500/10"
               )}
             >
-              <item.icon className={cn(
-                "w-5 h-5 transition-transform duration-200 group-hover:scale-110",
-                item.highlight && "text-green-500"
-              )} />
-              <span className="font-medium">{item.label}</span>
+              {/* Icon Container with hover effects */}
+              <div className={cn(
+                "relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "group-hover:scale-105 group-hover:shadow-lg",
+                isActive 
+                  ? "shadow-[0_0_16px_-2px_hsl(var(--primary)/0.4)] scale-105" 
+                  : "group-hover:shadow-[0_0_12px_-2px_hsl(var(--primary)/0.25)]",
+                isHighlight && "group-hover:shadow-[0_0_12px_-2px_hsl(142_76%_36%/0.3)]"
+              )}>
+                <img 
+                  src={item.icon} 
+                  alt={item.label}
+                  loading="lazy"
+                  decoding="async"
+                  className={cn(
+                    "w-full h-full object-cover",
+                    "transition-all duration-200 ease-out",
+                    "group-hover:brightness-110",
+                    isActive && "brightness-110"
+                  )}
+                />
+              </div>
+              
+              {/* Label */}
+              <span className={cn(
+                "font-medium transition-colors duration-200",
+                isActive 
+                  ? "text-primary" 
+                  : "text-muted-foreground group-hover:text-foreground",
+                isHighlight && !isActive && "text-green-500"
+              )}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
       </nav>
-
 
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
@@ -126,7 +153,7 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
           to="/profile"
           onClick={handleNavClick}
           className={cn(
-            "flex items-center gap-3 p-3 rounded-lg transition-all",
+            "flex items-center gap-3 p-3 rounded-lg transition-all duration-200 cursor-pointer",
             location.pathname === "/profile"
               ? "bg-primary/10"
               : "hover:bg-muted"
@@ -158,7 +185,7 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
             signOut();
             handleNavClick();
           }}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 cursor-pointer"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>
