@@ -105,41 +105,32 @@ export const DashboardSidebar = ({ onNavigate }: DashboardSidebarProps) => {
                     to={item.href}
                     onClick={handleNavClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer",
-                      "will-change-transform",
-                      isActive 
-                        ? "bg-primary/10 shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)]" 
-                        : "hover:bg-muted/60",
-                      isHighlight && !isActive && "bg-green-500/5 hover:bg-green-500/10"
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group cursor-pointer",
+                      isActive && "text-primary"
                     )}
                   >
-                    {/* Icon Container with hover effects */}
-                    <div className={cn(
-                      "relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0",
-                      "transition-all duration-200 ease-out",
-                      "group-hover:scale-105 group-hover:shadow-lg",
-                      isActive 
-                        ? "shadow-[0_0_16px_-2px_hsl(var(--primary)/0.4)] scale-105" 
-                        : "group-hover:shadow-[0_0_12px_-2px_hsl(var(--primary)/0.25)]",
-                      isHighlight && "group-hover:shadow-[0_0_12px_-2px_hsl(142_76%_36%/0.3)]"
-                    )}>
-                      <img 
-                        src={item.icon} 
-                        alt={item.label}
-                        loading="lazy"
-                        decoding="async"
-                        className={cn(
-                          "w-full h-full object-cover",
-                          "transition-all duration-200 ease-out",
-                          "group-hover:brightness-110",
-                          isActive && "brightness-110"
-                        )}
-                      />
-                    </div>
+                    {/* Icon - No background, only drop-shadow on hover */}
+                    <img 
+                      src={item.icon} 
+                      alt={item.label}
+                      loading="lazy"
+                      decoding="async"
+                      className={cn(
+                        "w-10 h-10 flex-shrink-0 object-contain",
+                        "transition-all duration-150 ease-out",
+                        // Hover: scale + glow via drop-shadow
+                        "group-hover:scale-[1.05]",
+                        "group-hover:[filter:drop-shadow(0_0_8px_hsl(262_83%_58%/0.5))_drop-shadow(0_0_4px_hsl(199_89%_48%/0.4))]",
+                        // Active state: stronger glow
+                        isActive && "scale-[1.03] [filter:drop-shadow(0_0_10px_hsl(262_83%_58%/0.6))_drop-shadow(0_0_6px_hsl(199_89%_48%/0.5))]",
+                        // Highlight (LPU) variant
+                        isHighlight && !isActive && "group-hover:[filter:drop-shadow(0_0_8px_hsl(142_76%_36%/0.5))_drop-shadow(0_0_4px_hsl(142_76%_36%/0.3))]"
+                      )}
+                    />
                     
                     {/* Label */}
                     <span className={cn(
-                      "font-medium transition-colors duration-200",
+                      "font-medium transition-colors duration-150",
                       isActive 
                         ? "text-primary" 
                         : "text-muted-foreground group-hover:text-foreground",
