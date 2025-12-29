@@ -1584,6 +1584,10 @@ export type Database = {
           is_verified: boolean
         }[]
       }
+      get_or_create_direct_chat: {
+        Args: { other_user_id: string }
+        Returns: string
+      }
       get_public_profile: {
         Args: { profile_id: string }
         Returns: {

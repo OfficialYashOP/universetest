@@ -372,52 +372,28 @@ const ChatPage = () => {
   const handleStartChat = async (otherUserId: string) => {
     if (!user) return;
 
-    // Check if chat already exists
-    const { data: existingParticipations } = await supabase
-      .from("chat_participants")
-      .select("room_id")
-      .eq("user_id", user.id);
+    try {
+      // Use the database function to get or create a chat atomically
+      const { data: roomId, error } = await supabase
+        .rpc("get_or_create_direct_chat", { other_user_id: otherUserId });
 
-    const roomIds = existingParticipations?.map(p => p.room_id) || [];
-
-    if (roomIds.length > 0) {
-      const { data: otherParticipations } = await supabase
-        .from("chat_participants")
-        .select("room_id")
-        .eq("user_id", otherUserId)
-        .in("room_id", roomIds);
-
-      if (otherParticipations?.length) {
-        // Chat already exists
-        const existingRoom = rooms.find(r => r.id === otherParticipations[0].room_id);
-        if (existingRoom) {
-          setSelectedRoom(existingRoom);
-          setShowNewChat(false);
-          return;
-        }
+      if (error) {
+        console.error("Error creating/getting chat:", error);
+        toast({ title: "Failed to start chat", description: error.message, variant: "destructive" });
+        return;
       }
+
+      if (!roomId) {
+        toast({ title: "Failed to start chat", variant: "destructive" });
+        return;
+      }
+
+      setShowNewChat(false);
+      await fetchRoomById(roomId);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast({ title: "Failed to start chat", variant: "destructive" });
     }
-
-    // Create new chat
-    const { data: newRoom, error: roomError } = await supabase
-      .from("chat_rooms")
-      .insert({ created_by: user.id })
-      .select()
-      .single();
-
-    if (roomError || !newRoom) {
-      toast({ title: "Failed to create chat", variant: "destructive" });
-      return;
-    }
-
-    // Add participants
-    await supabase.from("chat_participants").insert([
-      { room_id: newRoom.id, user_id: user.id },
-      { room_id: newRoom.id, user_id: otherUserId },
-    ]);
-
-    setShowNewChat(false);
-    fetchRooms();
   };
 
   const handleStartChatWithUser = async (otherUserId: string) => {
@@ -425,70 +401,23 @@ const ChatPage = () => {
     setStartingChatWith(otherUserId);
 
     try {
-      // Check if chat already exists
-      const { data: existingParticipations, error: fetchError } = await supabase
-        .from("chat_participants")
-        .select("room_id")
-        .eq("user_id", user.id);
+      // Use the database function to get or create a chat atomically
+      const { data: roomId, error } = await supabase
+        .rpc("get_or_create_direct_chat", { other_user_id: otherUserId });
 
-      if (fetchError) {
-        console.error("Error fetching participations:", fetchError);
-      }
-
-      const roomIds = existingParticipations?.map(p => p.room_id) || [];
-
-      if (roomIds.length > 0) {
-        const { data: otherParticipations } = await supabase
-          .from("chat_participants")
-          .select("room_id")
-          .eq("user_id", otherUserId)
-          .in("room_id", roomIds);
-
-        if (otherParticipations?.length) {
-          // Chat already exists - fetch it if not in rooms list
-          let existingRoom = rooms.find(r => r.id === otherParticipations[0].room_id);
-          if (existingRoom) {
-            setSelectedRoom(existingRoom);
-            setStartingChatWith(null);
-            return;
-          } else {
-            // Room exists but not in local state, fetch it
-            await fetchRoomById(otherParticipations[0].room_id);
-            setStartingChatWith(null);
-            return;
-          }
-        }
-      }
-
-      // Create new chat room
-      const { data: newRoom, error: roomError } = await supabase
-        .from("chat_rooms")
-        .insert({ created_by: user.id })
-        .select()
-        .single();
-
-      if (roomError || !newRoom) {
-        console.error("Error creating chat room:", roomError);
-        toast({ title: "Failed to create chat room", variant: "destructive" });
-        setStartingChatWith(null);
+      if (error) {
+        console.error("Error creating/getting chat:", error);
+        toast({ title: "Failed to start chat", description: error.message, variant: "destructive" });
         return;
       }
 
-      // Add both participants
-      const { error: participantError } = await supabase.from("chat_participants").insert([
-        { room_id: newRoom.id, user_id: user.id },
-        { room_id: newRoom.id, user_id: otherUserId },
-      ]);
-
-      if (participantError) {
-        console.error("Error adding participants:", participantError);
-        toast({ title: "Failed to add chat participants", variant: "destructive" });
-        setStartingChatWith(null);
+      if (!roomId) {
+        toast({ title: "Failed to start chat", variant: "destructive" });
         return;
       }
 
-      // Fetch and select the new room
-      await fetchRoomById(newRoom.id);
+      // Fetch and select the room
+      await fetchRoomById(roomId);
     } catch (error) {
       console.error("Error starting chat:", error);
       toast({ title: "Failed to start chat", variant: "destructive" });
