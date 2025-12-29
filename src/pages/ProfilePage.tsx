@@ -32,10 +32,12 @@ import {
   Save,
   Settings,
   AlertTriangle,
-  ImageIcon
+  ImageIcon,
+  Edit3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
+import defaultCover from "@/assets/default-cover.png";
 
 const ProfilePage = () => {
   const [searchParams] = useSearchParams();
@@ -50,12 +52,10 @@ const ProfilePage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const docInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -104,33 +104,6 @@ const ProfilePage = () => {
   const getInitials = (name: string | null) => {
     if (!name) return "U";
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-  };
-
-  const getVerificationStatus = () => {
-    switch (profile?.verification_status) {
-      case "verified":
-        return { icon: CheckCircle, text: "Verified", color: "text-green-500 bg-green-500/10" };
-      case "pending":
-        return { icon: Clock, text: "Pending Review", color: "text-amber-500 bg-amber-500/10" };
-      case "rejected":
-        return { icon: XCircle, text: "Rejected", color: "text-destructive bg-destructive/10" };
-      default:
-        return { icon: Shield, text: "Not Verified", color: "text-muted-foreground bg-muted" };
-    }
-  };
-
-  const getVerificationDocumentLabel = () => {
-    if (userRole === "alumni") {
-      return "Upload Transcript / Degree Certificate";
-    }
-    return "Upload University ID Card";
-  };
-
-  const getVerificationDocumentDescription = () => {
-    if (userRole === "alumni") {
-      return "Upload a clear photo of your transcript, degree certificate, or any official document from your university.";
-    }
-    return "Upload a clear photo of your university ID card, enrollment letter, or any official document that shows your name and university.";
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,29 +167,6 @@ const ProfilePage = () => {
     toast({ title: "Success", description: "Cover photo updated successfully." });
   };
 
-  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Error", description: "File must be less than 10MB.", variant: "destructive" });
-      return;
-    }
-
-    setIsUploadingDoc(true);
-    const { error } = await uploadVerificationDocument(file);
-    setIsUploadingDoc(false);
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to upload document.", variant: "destructive" });
-    } else {
-      toast({ 
-        title: "Document Submitted", 
-        description: "Your verification document has been submitted for review." 
-      });
-    }
-  };
-
   const handleSave = async () => {
     setIsSaving(true);
     
@@ -238,8 +188,6 @@ const ProfilePage = () => {
     }
   };
 
-  const verificationStatus = getVerificationStatus();
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -253,21 +201,20 @@ const ProfilePage = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        {/* Profile Header */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+        {/* Revamped Profile Header */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
           {/* Cover Photo */}
-          <div className="relative h-32 sm:h-48 bg-gradient-to-r from-primary via-primary/80 to-primary/60">
-            {profile?.cover_photo_url && (
-              <img 
-                src={profile.cover_photo_url} 
-                alt="Cover" 
-                className="w-full h-full object-cover"
-              />
-            )}
+          <div className="relative h-36 sm:h-52 overflow-hidden group">
+            <img 
+              src={profile?.cover_photo_url || defaultCover} 
+              alt="Cover" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <button
               onClick={() => coverInputRef.current?.click()}
               disabled={isUploadingCover}
-              className="absolute bottom-3 right-3 p-2 bg-black/50 rounded-lg text-white hover:bg-black/70 transition-colors"
+              className="absolute bottom-4 right-4 p-2.5 bg-black/40 backdrop-blur-sm rounded-xl text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/60 hover:scale-105"
             >
               {isUploadingCover ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -284,27 +231,30 @@ const ProfilePage = () => {
             />
           </div>
           
-          {/* Avatar & Info */}
-          <div className="px-4 sm:px-6 pb-6">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16">
-              <div className="relative">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-card">
-                  <AvatarImage src={profile?.avatar_url || ""} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white text-2xl sm:text-3xl">
-                    {getInitials(profile?.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
-                  className="absolute bottom-0 right-0 p-2 bg-primary rounded-full text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  {isUploadingAvatar ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Camera className="w-4 h-4" />
-                  )}
-                </button>
+          {/* Profile Info Section */}
+          <div className="relative px-4 sm:px-8 pb-6">
+            {/* Avatar - Positioned to overlap cover */}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="relative -mt-16 sm:-mt-20 z-10">
+                <div className="relative group">
+                  <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-card shadow-xl transition-transform duration-300 group-hover:scale-105">
+                    <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
+                    <AvatarFallback className="bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white text-3xl sm:text-4xl font-semibold">
+                      {getInitials(profile?.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-1 right-1 p-2.5 bg-primary rounded-full text-primary-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-primary/90 hover:scale-110"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
                 <input
                   ref={avatarInputRef}
                   type="file"
@@ -314,25 +264,31 @@ const ProfilePage = () => {
                 />
               </div>
               
-              <div className="flex-1 pt-2 sm:pt-0">
+              {/* User Info - Properly positioned */}
+              <div className="flex-1 min-w-0 pt-2 sm:pt-4 sm:pb-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold">{profile?.full_name || "User"}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate transition-colors duration-300">
+                    {profile?.full_name || "User"}
+                  </h1>
                   {profile?.is_verified && (
-                    <BadgeCheck className="w-6 h-6 text-primary" />
+                    <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary flex-shrink-0 animate-fade-in" />
                   )}
                 </div>
+                
                 {profile?.username && (
-                  <p className="text-muted-foreground">@{profile.username}</p>
+                  <p className="text-muted-foreground text-base sm:text-lg font-medium mt-0.5 transition-colors duration-300 hover:text-primary cursor-default">
+                    @{profile.username}
+                  </p>
                 )}
-                <div className="flex items-center gap-3 mt-2 text-muted-foreground flex-wrap text-sm">
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-4 h-4" />
-                    {profile?.email}
-                  </span>
+                
+                <div className="flex items-center gap-2 mt-2 text-muted-foreground text-sm sm:text-base transition-colors duration-300 hover:text-foreground">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{profile?.email}</span>
                 </div>
+
                 {/* University Badge */}
                 {profile?.university && (
-                  <div className="flex items-center gap-2 mt-3 p-2 bg-muted rounded-lg w-fit">
+                  <div className="flex items-center gap-3 mt-4 p-3 bg-muted/50 backdrop-blur-sm rounded-xl w-fit border border-border/50 transition-all duration-300 hover:bg-muted hover:border-border hover:shadow-md group cursor-default">
                     <UniversityLogo
                       logoUrl={profile.university.logo_url}
                       name={profile.university.name}
@@ -340,55 +296,67 @@ const ProfilePage = () => {
                       size="sm"
                     />
                     <div>
-                      <p className="text-sm font-medium">{profile.university.short_name || profile.university.name}</p>
-                      <p className="text-xs text-muted-foreground">{profile.university.location || "India"}</p>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
+                        {profile.university.short_name || profile.university.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {profile.university.location || "India"}
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
               
-              <Button
-                variant={isEditing ? "outline" : "default"}
-                onClick={() => {
-                  if (isEditing) {
-                    setFormData({
-                      full_name: profile?.full_name || "",
-                      bio: profile?.bio || "",
-                      phone: profile?.phone || "",
-                      branch: profile?.branch || "",
-                      year_of_study: profile?.year_of_study || "",
-                      roll_number: profile?.roll_number || "",
-                    });
-                  }
-                  setIsEditing(!isEditing);
-                }}
-              >
-                {isEditing ? "Cancel" : "Edit Profile"}
-              </Button>
+              {/* Edit Button */}
+              <div className="sm:self-start sm:mt-4">
+                <Button
+                  variant={isEditing ? "outline" : "default"}
+                  onClick={() => {
+                    if (isEditing) {
+                      setFormData({
+                        full_name: profile?.full_name || "",
+                        bio: profile?.bio || "",
+                        phone: profile?.phone || "",
+                        branch: profile?.branch || "",
+                        year_of_study: profile?.year_of_study || "",
+                        roll_number: profile?.roll_number || "",
+                      });
+                    }
+                    setIsEditing(!isEditing);
+                  }}
+                  className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  {isEditing ? "Cancel" : "Edit Profile"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="bg-muted">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="verification" className="flex items-center gap-2">
-              Verification
-              {!profile?.is_verified && (
-                <span className="w-2 h-2 bg-amber-500 rounded-full" />
-              )}
+        {/* Tabs - Only Profile and Settings */}
+        <Tabs defaultValue={defaultTab === "verification" ? "profile" : defaultTab} className="space-y-6">
+          <TabsList className="bg-muted/50 backdrop-blur-sm p-1 rounded-xl border border-border/50">
+            <TabsTrigger 
+              value="profile" 
+              className="rounded-lg transition-all duration-300 data-[state=active]:shadow-md"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Profile
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
+            <TabsTrigger 
+              value="settings" 
+              className="rounded-lg transition-all duration-300 data-[state=active]:shadow-md"
+            >
+              <Settings className="w-4 h-4 mr-2" />
               Settings
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="profile" className="space-y-6 animate-fade-in">
             {/* Edit Limits Warning */}
             {isEditing && (!canEditFullName || !canEditUsername) && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
                 <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
                 <div className="text-sm">
                   <p className="font-medium text-amber-500">Edit Restrictions</p>
@@ -401,15 +369,17 @@ const ProfilePage = () => {
             )}
 
             {/* Basic Info */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-6 transition-all duration-300 hover:shadow-md hover:border-border/80">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
                 Basic Information
               </h2>
               
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name" className="flex items-center gap-2">
+                <div className="space-y-2 group">
+                  <Label htmlFor="full_name" className="flex items-center gap-2 transition-colors duration-300 group-focus-within:text-primary">
                     Full Name
                     {!canEditFullName && (
                       <Badge variant="secondary" className="text-xs">Locked</Badge>
@@ -421,28 +391,34 @@ const ProfilePage = () => {
                       value={formData.full_name}
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                       disabled={!canEditFullName}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.full_name || "Not set"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.full_name || "Not set"}</p>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                <div className="space-y-2 group">
+                  <Label htmlFor="phone" className="transition-colors duration-300 group-focus-within:text-primary">
+                    Phone Number
+                  </Label>
                   {isEditing ? (
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+91 1234567890"
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.phone || "Not set"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.phone || "Not set"}</p>
                   )}
                 </div>
                 
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="bio">Bio</Label>
+                <div className="space-y-2 sm:col-span-2 group">
+                  <Label htmlFor="bio" className="transition-colors duration-300 group-focus-within:text-primary">
+                    Bio
+                  </Label>
                   {isEditing ? (
                     <Textarea
                       id="bio"
@@ -450,74 +426,90 @@ const ProfilePage = () => {
                       onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                       placeholder="Tell others about yourself..."
                       rows={3}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 resize-none"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.bio || "No bio yet"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.bio || "No bio yet"}</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Academic Info */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-6 transition-all duration-300 hover:shadow-md hover:border-border/80">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-primary" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <GraduationCap className="w-5 h-5 text-primary" />
+                </div>
                 Academic Information
               </h2>
               
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="roll_number">Roll Number / ID</Label>
+                <div className="space-y-2 group">
+                  <Label htmlFor="roll_number" className="transition-colors duration-300 group-focus-within:text-primary">
+                    Roll Number / ID
+                  </Label>
                   {isEditing ? (
                     <Input
                       id="roll_number"
                       value={formData.roll_number}
                       onChange={(e) => setFormData({ ...formData, roll_number: e.target.value })}
                       placeholder="e.g., 12345678"
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.roll_number || "Not set"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.roll_number || "Not set"}</p>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="branch">Branch / Department</Label>
+                <div className="space-y-2 group">
+                  <Label htmlFor="branch" className="transition-colors duration-300 group-focus-within:text-primary">
+                    Branch / Department
+                  </Label>
                   {isEditing ? (
                     <Input
                       id="branch"
                       value={formData.branch}
                       onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
                       placeholder="e.g., Computer Science"
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.branch || "Not set"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.branch || "Not set"}</p>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="year_of_study">Year of Study</Label>
+                <div className="space-y-2 group">
+                  <Label htmlFor="year_of_study" className="transition-colors duration-300 group-focus-within:text-primary">
+                    Year of Study
+                  </Label>
                   {isEditing ? (
                     <Input
                       id="year_of_study"
                       value={formData.year_of_study}
                       onChange={(e) => setFormData({ ...formData, year_of_study: e.target.value })}
                       placeholder="e.g., 3rd Year"
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   ) : (
-                    <p className="text-muted-foreground">{profile?.year_of_study || "Not set"}</p>
+                    <p className="text-muted-foreground py-2">{profile?.year_of_study || "Not set"}</p>
                   )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label>Role</Label>
-                  <p className="text-muted-foreground capitalize">{userRole || "student"}</p>
+                  <p className="text-muted-foreground py-2 capitalize">{userRole || "student"}</p>
                 </div>
               </div>
             </div>
 
             {isEditing && (
-              <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+              <div className="flex justify-end animate-fade-in">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving} 
+                  className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
                   {isSaving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
@@ -529,111 +521,7 @@ const ProfilePage = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="verification" className="space-y-6">
-            {/* Verification Status */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  Verification Status
-                </h2>
-                <Badge className={cn("gap-1", verificationStatus.color)}>
-                  <verificationStatus.icon className="w-4 h-4" />
-                  {verificationStatus.text}
-                </Badge>
-              </div>
-
-              {profile?.verification_status === "verified" ? (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-8 h-8 text-green-500" />
-                    <div>
-                      <p className="font-medium text-green-500">Your account is verified!</p>
-                      <p className="text-sm text-muted-foreground">
-                        You have full access to all Sympan features.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : profile?.verification_status === "pending" ? (
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-8 h-8 text-amber-500" />
-                    <div>
-                      <p className="font-medium text-amber-500">Verification in progress</p>
-                      <p className="text-sm text-muted-foreground">
-                        Your document is being reviewed. This usually takes 1-2 business days.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Verify your university affiliation to unlock full access to Sympan and get a verified badge on your profile.
-                  </p>
-                  
-                  <div className="bg-muted rounded-lg p-4 space-y-3">
-                    <h3 className="font-medium">{getVerificationDocumentLabel()}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {getVerificationDocumentDescription()}
-                    </p>
-                    
-                    <div
-                      onClick={() => docInputRef.current?.click()}
-                      className={cn(
-                        "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
-                        "hover:border-primary hover:bg-primary/5",
-                        isUploadingDoc && "pointer-events-none opacity-50"
-                      )}
-                    >
-                      {isUploadingDoc ? (
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-                      ) : (
-                        <>
-                          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="font-medium">Click to upload</p>
-                          <p className="text-sm text-muted-foreground">
-                            PNG, JPG or PDF up to 10MB
-                          </p>
-                        </>
-                      )}
-                    </div>
-                    
-                    <input
-                      ref={docInputRef}
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleDocumentUpload}
-                      className="hidden"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Benefits */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <h2 className="text-lg font-semibold">Benefits of Verification</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  "Verified badge on your profile",
-                  "Access to housing & roommate finder",
-                  "Post and interact in campus feed",
-                  "Direct messaging with other students",
-                  "Access to academic resources marketplace",
-                  "View and review local services",
-                ].map((benefit) => (
-                  <div key={benefit} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                    <span className="text-sm">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="animate-fade-in">
             <AccountSettings />
           </TabsContent>
         </Tabs>
