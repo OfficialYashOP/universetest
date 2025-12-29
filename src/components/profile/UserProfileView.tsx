@@ -23,6 +23,7 @@ import {
   MessageCircle,
   ArrowLeft,
   ShieldAlert,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -39,6 +40,7 @@ interface UserProfile {
   branch: string | null;
   year_of_study: string | null;
   university_id: string | null;
+  verification_status: "pending" | "verified" | "rejected" | null;
 }
 
 interface Post {
@@ -289,19 +291,25 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
 
         <div className="flex-1 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-lg sm:text-xl font-semibold">
                 {profile.username || profile.full_name || "User"}
               </h1>
               {profile.is_verified && (
                 <BadgeCheck className="w-5 h-5 text-primary" />
               )}
+              {profile.verification_status === "pending" && !profile.is_verified && (
+                <Badge variant="outline" className="gap-1 text-amber-600 border-amber-500/50 bg-amber-500/10">
+                  <Clock className="w-3 h-3" />
+                  Verification Pending
+                </Badge>
+              )}
             </div>
             
             {!isOwnProfile && user && (
               <div className="flex flex-col gap-2">
-                {/* Not Verified Badge */}
-                {!profile.is_verified && (
+                {/* Not Verified Badge - only show if not pending */}
+                {!profile.is_verified && profile.verification_status !== "pending" && (
                   <Badge variant="outline" className="w-fit gap-1 text-muted-foreground border-muted-foreground/30">
                     <ShieldAlert className="w-3 h-3" />
                     Not Verified

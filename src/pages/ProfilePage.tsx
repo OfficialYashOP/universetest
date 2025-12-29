@@ -431,6 +431,12 @@ const ProfilePage = () => {
                   {profile?.is_verified && (
                     <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary flex-shrink-0 animate-fade-in" />
                   )}
+                  {profile?.verification_status === "pending" && !profile?.is_verified && (
+                    <Badge variant="outline" className="gap-1 text-amber-600 border-amber-500/50 bg-amber-500/10">
+                      <Clock className="w-3 h-3" />
+                      Verification Pending
+                    </Badge>
+                  )}
                 </div>
                 
                 {profile?.username && (
