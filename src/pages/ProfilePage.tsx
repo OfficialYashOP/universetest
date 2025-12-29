@@ -602,11 +602,11 @@ const ProfilePage = () => {
                 </>
               ) : (
                 <>
-                  <div className="p-2.5 bg-muted rounded-xl">
-                    <Shield className="w-6 h-6 text-muted-foreground" />
+                  <div className="p-2.5 bg-destructive/10 rounded-xl">
+                    <Shield className="w-6 h-6 text-destructive" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">Not Verified</h3>
+                    <h3 className="font-semibold text-destructive">Not Verified</h3>
                     <p className="text-sm text-muted-foreground">
                       Get a blue tick to show you're a trusted member
                     </p>
