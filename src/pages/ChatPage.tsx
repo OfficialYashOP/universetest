@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Send, Loader2, Lock, Search, Plus, ArrowLeft, Users, Shield, ShieldCheck } from "lucide-react";
+import { Send, Loader2, Lock, Search, Plus, ArrowLeft, Users, Shield, Check, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,9 @@ import {
   getSafetyNumber 
 } from "@/lib/e2ee";
 import { Badge } from "@/components/ui/badge";
+import { SafetyNumberDialog } from "@/components/chat/SafetyNumberDialog";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { EncryptionBadge } from "@/components/chat/EncryptionBadge";
 
 // Simple encryption utilities for backward compatibility
 const generateKey = async (): Promise<CryptoKey> => {
@@ -125,7 +128,15 @@ const ChatPage = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
   const [startingChatWith, setStartingChatWith] = useState<string | null>(null);
+  const [showSafetyNumber, setShowSafetyNumber] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get peer ID from selected room
+  const peerId = selectedRoom?.participants?.[0]?.user_id;
+  const peerName = selectedRoom?.participants?.[0]?.profile?.full_name || "User";
 
   useEffect(() => {
     initializeEncryption();
@@ -149,7 +160,12 @@ const ChatPage = () => {
   useEffect(() => {
     if (selectedRoom) {
       fetchMessages(selectedRoom.id);
-      subscribeToMessages(selectedRoom.id);
+      const unsubMessages = subscribeToMessages(selectedRoom.id);
+      const unsubTyping = subscribeToTyping(selectedRoom.id);
+      return () => {
+        unsubMessages?.();
+        unsubTyping?.();
+      };
     }
   }, [selectedRoom?.id]);
 
@@ -336,10 +352,75 @@ const ChatPage = () => {
     };
   };
 
+  const subscribeToTyping = (roomId: string) => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel(`typing-${roomId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_typing_status",
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) => {
+          const typingData = payload.new as any;
+          if (typingData && typingData.user_id !== user.id) {
+            setPeerTyping(typingData.is_typing);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const updateTypingStatus = useCallback(async (typing: boolean) => {
+    if (!selectedRoom || !user) return;
+    
+    await supabase
+      .from("chat_typing_status")
+      .upsert({
+        room_id: selectedRoom.id,
+        user_id: user.id,
+        is_typing: typing,
+        updated_at: new Date().toISOString(),
+      });
+  }, [selectedRoom?.id, user?.id]);
+
+  const handleTyping = () => {
+    if (!isTyping) {
+      setIsTyping(true);
+      updateTypingStatus(true);
+    }
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set new timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      updateTypingStatus(false);
+    }, 2000);
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRoom || !user || !encryptionKey) return;
 
     setSendingMessage(true);
+    
+    // Stop typing indicator
+    setIsTyping(false);
+    updateTypingStatus(false);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
     const { encrypted, iv } = await encryptMessage(newMessage.trim(), encryptionKey);
 
@@ -588,11 +669,21 @@ const ChatPage = () => {
                 </Avatar>
                 <div className="flex-1">
                   <p className="font-semibold">{getChatName(selectedRoom)}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Encrypted
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <EncryptionBadge variant="small" />
+                    {peerTyping && (
+                      <span className="text-xs text-primary animate-pulse">typing...</span>
+                    )}
+                  </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSafetyNumber(true)}
+                  title="Verify encryption"
+                >
+                  <Shield className="w-5 h-5" />
+                </Button>
               </div>
 
               {/* Messages */}
@@ -615,17 +706,21 @@ const ChatPage = () => {
                         )}
                       >
                         <p className="break-words">{msg.decrypted}</p>
-                        <p className={cn(
-                          "text-xs mt-1",
+                        <div className={cn(
+                          "text-xs mt-1 flex items-center gap-1",
                           msg.sender_id === user?.id
-                            ? "text-primary-foreground/70"
+                            ? "text-primary-foreground/70 justify-end"
                             : "text-muted-foreground"
                         )}>
                           {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                        </p>
+                          {msg.sender_id === user?.id && (
+                            <CheckCheck className="w-3 h-3" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
+                  {peerTyping && <TypingIndicator />}
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
@@ -635,7 +730,10 @@ const ChatPage = () => {
                 <Input
                   placeholder="Type a message..."
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                   className="flex-1"
                 />
@@ -706,6 +804,17 @@ const ChatPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Safety Number Dialog */}
+      {user && peerId && (
+        <SafetyNumberDialog
+          open={showSafetyNumber}
+          onOpenChange={setShowSafetyNumber}
+          userId={user.id}
+          peerId={peerId}
+          peerName={peerName}
+        />
+      )}
     </DashboardLayout>
   );
 };
