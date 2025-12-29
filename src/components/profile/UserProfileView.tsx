@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useProfile } from "@/hooks/useProfile";
 
 interface UserProfile {
   id: string;
@@ -62,6 +63,7 @@ interface UserProfileViewProps {
 
 export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
   const { user } = useAuth();
+  const { profile: myProfile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -72,6 +74,7 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isStartingChat, setIsStartingChat] = useState(false);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
 
@@ -189,6 +192,63 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
     setIsFollowLoading(false);
   };
 
+  const handleStartChat = async () => {
+    if (!user) return;
+    
+    setIsStartingChat(true);
+
+    try {
+      // Check if chat already exists
+      const { data: existingParticipations } = await supabase
+        .from("chat_participants")
+        .select("room_id")
+        .eq("user_id", user.id);
+
+      const roomIds = existingParticipations?.map(p => p.room_id) || [];
+
+      if (roomIds.length > 0) {
+        const { data: otherParticipations } = await supabase
+          .from("chat_participants")
+          .select("room_id")
+          .eq("user_id", userId)
+          .in("room_id", roomIds);
+
+        if (otherParticipations?.length) {
+          // Chat already exists, navigate to it
+          navigate(`/chat?room=${otherParticipations[0].room_id}`);
+          setIsStartingChat(false);
+          return;
+        }
+      }
+
+      // Create new chat room
+      const { data: newRoom, error: roomError } = await supabase
+        .from("chat_rooms")
+        .insert({ created_by: user.id })
+        .select()
+        .single();
+
+      if (roomError || !newRoom) {
+        toast({ title: "Failed to start chat", variant: "destructive" });
+        setIsStartingChat(false);
+        return;
+      }
+
+      // Add participants
+      await supabase.from("chat_participants").insert([
+        { room_id: newRoom.id, user_id: user.id },
+        { room_id: newRoom.id, user_id: userId },
+      ]);
+
+      // Navigate to chat page with the new room
+      navigate(`/chat?room=${newRoom.id}`);
+    } catch (error) {
+      toast({ title: "Failed to start chat", variant: "destructive" });
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
   const getInitials = (name: string | null) => {
     if (!name) return "U";
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -255,9 +315,21 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
                     </>
                   )}
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1">
-                  <MessageCircle className="w-4 h-4" />
-                  Message
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="gap-1"
+                  onClick={handleStartChat}
+                  disabled={isStartingChat}
+                >
+                  {isStartingChat ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </>
+                  )}
                 </Button>
               </div>
             )}

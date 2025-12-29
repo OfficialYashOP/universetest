@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Send, Loader2, Lock, Search, Plus, ArrowLeft, MoreVertical } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -101,6 +102,8 @@ const ChatPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const roomIdFromUrl = searchParams.get("room");
   
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
@@ -119,6 +122,19 @@ const ChatPage = () => {
     fetchRooms();
   }, [user?.id]);
 
+  // Handle room selection from URL query param
+  useEffect(() => {
+    if (roomIdFromUrl && rooms.length > 0 && !selectedRoom) {
+      const roomFromUrl = rooms.find(r => r.id === roomIdFromUrl);
+      if (roomFromUrl) {
+        setSelectedRoom(roomFromUrl);
+      } else {
+        // Room exists but not in the list yet - fetch it
+        fetchRoomById(roomIdFromUrl);
+      }
+    }
+  }, [roomIdFromUrl, rooms, selectedRoom]);
+
   useEffect(() => {
     if (selectedRoom) {
       fetchMessages(selectedRoom.id);
@@ -129,6 +145,48 @@ const ChatPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const fetchRoomById = async (roomId: string) => {
+    if (!user) return;
+    
+    const { data: roomData } = await supabase
+      .from("chat_rooms")
+      .select("*")
+      .eq("id", roomId)
+      .maybeSingle();
+
+    if (!roomData) return;
+
+    const { data: participants } = await supabase
+      .from("chat_participants")
+      .select("user_id")
+      .eq("room_id", roomId);
+
+    const otherParticipants = participants?.filter(p => p.user_id !== user.id) || [];
+    
+    let profiles: any[] = [];
+    if (otherParticipants.length > 0) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url")
+        .in("id", otherParticipants.map(p => p.user_id));
+      profiles = data || [];
+    }
+
+    const roomWithParticipants = {
+      ...roomData,
+      participants: otherParticipants.map(p => ({
+        user_id: p.user_id,
+        profile: profiles.find(pr => pr.id === p.user_id),
+      })),
+    };
+
+    setRooms(prev => {
+      if (prev.find(r => r.id === roomId)) return prev;
+      return [roomWithParticipants, ...prev];
+    });
+    setSelectedRoom(roomWithParticipants);
+  };
 
   const initializeEncryption = async () => {
     // In production, you'd derive this from user credentials or store securely
