@@ -269,9 +269,9 @@ const ProfilePage = () => {
   const handleRemoveCover = async () => {
     const { error } = await updateProfile({ cover_photo_url: null });
     if (error) {
-      toast({ title: "Error", description: "Failed to remove cover photo.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to reset cover photo.", variant: "destructive" });
     } else {
-      toast({ title: "Success", description: "Cover photo removed." });
+      toast({ title: "Success", description: "Cover photo reset to default." });
     }
   };
 
@@ -347,10 +347,10 @@ const ProfilePage = () => {
                   {profile?.cover_photo_url && (
                     <DropdownMenuItem 
                       onClick={handleRemoveCover}
-                      className="gap-3 cursor-pointer py-2.5 text-destructive focus:text-destructive focus:bg-destructive/10"
+                      className="gap-3 cursor-pointer py-2.5 text-amber-600 focus:text-amber-600 focus:bg-amber-500/10"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Remove Cover Photo</span>
+                      <ImageIcon className="w-4 h-4" />
+                      <span>Reset to Default</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
