@@ -348,13 +348,7 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
                     size="sm" 
                     variant="outline" 
                     className="gap-1"
-                    onClick={() => {
-                      if (!profile.is_verified) {
-                        setShowMessageWarning(true);
-                      } else {
-                        handleStartChat();
-                      }
-                    }}
+                    onClick={handleStartChat}
                     disabled={isStartingChat}
                   >
                     {isStartingChat ? (
