@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
@@ -11,9 +11,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { AccountSettings } from "@/components/profile/AccountSettings";
 import UniversityLogo from "@/components/university/UniversityLogo";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   User, 
   Mail, 
@@ -33,7 +40,9 @@ import {
   Settings,
   AlertTriangle,
   ImageIcon,
-  Edit3
+  Edit3,
+  Trash2,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
@@ -67,11 +76,34 @@ const ProfilePage = () => {
     roll_number: profile?.roll_number || "",
   });
 
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+
   // Check edit limits
   const canEditUsername = !profile?.username_updated_at || 
     differenceInDays(new Date(), new Date(profile.username_updated_at)) >= 30;
   const canEditFullName = !profile?.full_name_updated_at || 
     differenceInDays(new Date(), new Date(profile.full_name_updated_at)) >= 30;
+
+  // Profile completion calculation
+  const profileCompletion = useMemo(() => {
+    if (!profile) return { percentage: 0, completed: 0, total: 8, fields: [] };
+    
+    const fields = [
+      { name: "Full Name", filled: !!profile.full_name, icon: User },
+      { name: "Profile Photo", filled: !!profile.avatar_url, icon: Camera },
+      { name: "Bio", filled: !!profile.bio, icon: Edit3 },
+      { name: "Phone", filled: !!profile.phone, icon: Phone },
+      { name: "Roll Number", filled: !!profile.roll_number, icon: BadgeCheck },
+      { name: "Branch", filled: !!profile.branch, icon: GraduationCap },
+      { name: "Year of Study", filled: !!profile.year_of_study, icon: BookOpen },
+      { name: "Cover Photo", filled: !!profile.cover_photo_url, icon: ImageIcon },
+    ];
+    
+    const completed = fields.filter(f => f.filled).length;
+    const percentage = Math.round((completed / fields.length) * 100);
+    
+    return { percentage, completed, total: fields.length, fields };
+  }, [profile]);
 
   // Fetch user role
   useEffect(() => {
@@ -128,6 +160,20 @@ const ProfilePage = () => {
       toast({ title: "Error", description: "Failed to upload avatar.", variant: "destructive" });
     } else {
       toast({ title: "Success", description: "Avatar updated successfully." });
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!profile?.avatar_url) return;
+    
+    setIsRemovingAvatar(true);
+    const { error } = await updateProfile({ avatar_url: null });
+    setIsRemovingAvatar(false);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to remove avatar.", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Profile photo removed." });
     }
   };
 
@@ -236,25 +282,43 @@ const ProfilePage = () => {
             {/* Avatar - Positioned to overlap cover */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div className="relative -mt-16 sm:-mt-20 z-10">
-                <div className="relative group">
-                  <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-card shadow-xl transition-transform duration-300 group-hover:scale-105">
-                    <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white text-3xl sm:text-4xl font-semibold">
-                      {getInitials(profile?.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    onClick={() => avatarInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
-                    className="absolute bottom-1 right-1 p-2.5 bg-primary rounded-full text-primary-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-primary/90 hover:scale-110"
-                  >
-                    {isUploadingAvatar ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Camera className="w-4 h-4" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="relative group cursor-pointer">
+                      <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-card shadow-xl transition-transform duration-300 group-hover:scale-105">
+                        <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
+                        <AvatarFallback className="bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white text-3xl sm:text-4xl font-semibold">
+                          {getInitials(profile?.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                        {(isUploadingAvatar || isRemovingAvatar) ? (
+                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        ) : (
+                          <Camera className="w-8 h-8 text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4" />
+                      {profile?.avatar_url ? "Update Photo" : "Upload Photo"}
+                    </DropdownMenuItem>
+                    {profile?.avatar_url && (
+                      <DropdownMenuItem 
+                        onClick={handleRemoveAvatar}
+                        className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Remove Photo
+                      </DropdownMenuItem>
                     )}
-                  </button>
-                </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <input
                   ref={avatarInputRef}
                   type="file"
@@ -333,6 +397,47 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Profile Completion Progress */}
+        {profileCompletion.percentage < 100 && (
+          <div className="bg-card border border-border rounded-xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Complete Your Profile</h3>
+              </div>
+              <span className="text-sm font-medium text-primary">
+                {profileCompletion.percentage}%
+              </span>
+            </div>
+            
+            <Progress 
+              value={profileCompletion.percentage} 
+              className="h-2.5 mb-3" 
+            />
+            
+            <div className="flex flex-wrap gap-2">
+              {profileCompletion.fields.filter(f => !f.filled).slice(0, 4).map((field) => (
+                <Badge 
+                  key={field.name}
+                  variant="secondary" 
+                  className="gap-1.5 py-1 px-2.5 cursor-pointer hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <field.icon className="w-3 h-3" />
+                  {field.name}
+                </Badge>
+              ))}
+              {profileCompletion.fields.filter(f => !f.filled).length > 4 && (
+                <Badge variant="outline" className="py-1 px-2.5">
+                  +{profileCompletion.fields.filter(f => !f.filled).length - 4} more
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Tabs - Only Profile and Settings */}
         <Tabs defaultValue={defaultTab === "verification" ? "profile" : defaultTab} className="space-y-6">
