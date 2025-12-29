@@ -266,6 +266,15 @@ const ProfilePage = () => {
     toast({ title: "Success", description: "Cover photo updated successfully." });
   };
 
+  const handleRemoveCover = async () => {
+    const { error } = await updateProfile({ cover_photo_url: null });
+    if (error) {
+      toast({ title: "Error", description: "Failed to remove cover photo.", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Cover photo removed." });
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     
@@ -302,25 +311,52 @@ const ProfilePage = () => {
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Revamped Profile Header */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
-          {/* Cover Photo */}
+          {/* Cover Photo with Facebook-style Controls */}
           <div className="relative h-36 sm:h-52 overflow-hidden group">
             <img 
               src={profile?.cover_photo_url || defaultCover} 
               alt="Cover" 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              disabled={isUploadingCover}
-              className="absolute bottom-4 right-4 p-2.5 bg-black/40 backdrop-blur-sm rounded-xl text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/60 hover:scale-105"
-            >
-              {isUploadingCover ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ImageIcon className="w-4 h-4" />
-              )}
-            </button>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Cover Photo Controls - Facebook Style */}
+            <div className="absolute bottom-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={isUploadingCover}
+                    className="flex items-center gap-2 px-3 py-2 bg-card/95 backdrop-blur-md rounded-lg text-foreground border border-border shadow-lg hover:bg-card transition-all duration-200 hover:scale-105"
+                  >
+                    {isUploadingCover ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                    <span className="text-sm font-medium hidden sm:inline">Edit Cover</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 bg-card border border-border shadow-xl z-50">
+                  <DropdownMenuItem 
+                    onClick={() => coverInputRef.current?.click()}
+                    className="gap-3 cursor-pointer py-2.5"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{profile?.cover_photo_url ? "Update Cover Photo" : "Upload Cover Photo"}</span>
+                  </DropdownMenuItem>
+                  {profile?.cover_photo_url && (
+                    <DropdownMenuItem 
+                      onClick={handleRemoveCover}
+                      className="gap-3 cursor-pointer py-2.5 text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Remove Cover Photo</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
             <input
               ref={coverInputRef}
               type="file"
@@ -332,42 +368,47 @@ const ProfilePage = () => {
           
           {/* Profile Info Section */}
           <div className="relative px-4 sm:px-8 pb-6">
-            {/* Avatar - Positioned to overlap cover */}
+            {/* Avatar with Facebook-style Controls */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div className="relative -mt-16 sm:-mt-20 z-10">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="relative group cursor-pointer">
-                      <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-card shadow-xl transition-transform duration-300 group-hover:scale-105">
+                    <div className="relative group/avatar cursor-pointer">
+                      <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-card shadow-xl transition-all duration-300 group-hover/avatar:shadow-2xl">
                         <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
                         <AvatarFallback className="bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white text-3xl sm:text-4xl font-semibold">
                           {getInitials(profile?.full_name)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                      
+                      {/* Hover Overlay with Camera Icon */}
+                      <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1">
                         {(isUploadingAvatar || isRemovingAvatar) ? (
-                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                          <Loader2 className="w-7 h-7 text-white animate-spin" />
                         ) : (
-                          <Camera className="w-8 h-8 text-white" />
+                          <>
+                            <Camera className="w-7 h-7 text-white" />
+                            <span className="text-xs text-white font-medium">Edit</span>
+                          </>
                         )}
                       </div>
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-48">
+                  <DropdownMenuContent align="start" sideOffset={8} className="w-52 bg-card border border-border shadow-xl z-50">
                     <DropdownMenuItem 
                       onClick={() => avatarInputRef.current?.click()}
-                      className="gap-2 cursor-pointer"
+                      className="gap-3 cursor-pointer py-2.5"
                     >
                       <Upload className="w-4 h-4" />
-                      {profile?.avatar_url ? "Update Photo" : "Upload Photo"}
+                      <span>{profile?.avatar_url ? "Update Profile Photo" : "Upload Profile Photo"}</span>
                     </DropdownMenuItem>
                     {profile?.avatar_url && (
                       <DropdownMenuItem 
                         onClick={handleRemoveAvatar}
-                        className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+                        className="gap-3 cursor-pointer py-2.5 text-destructive focus:text-destructive focus:bg-destructive/10"
                       >
                         <Trash2 className="w-4 h-4" />
-                        Remove Photo
+                        <span>Remove Profile Photo</span>
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
