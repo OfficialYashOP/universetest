@@ -426,10 +426,14 @@ const ChatPage = () => {
 
     try {
       // Check if chat already exists
-      const { data: existingParticipations } = await supabase
+      const { data: existingParticipations, error: fetchError } = await supabase
         .from("chat_participants")
         .select("room_id")
         .eq("user_id", user.id);
+
+      if (fetchError) {
+        console.error("Error fetching participations:", fetchError);
+      }
 
       const roomIds = existingParticipations?.map(p => p.room_id) || [];
 
@@ -441,17 +445,22 @@ const ChatPage = () => {
           .in("room_id", roomIds);
 
         if (otherParticipations?.length) {
-          // Chat already exists
-          const existingRoom = rooms.find(r => r.id === otherParticipations[0].room_id);
+          // Chat already exists - fetch it if not in rooms list
+          let existingRoom = rooms.find(r => r.id === otherParticipations[0].room_id);
           if (existingRoom) {
             setSelectedRoom(existingRoom);
+            setStartingChatWith(null);
+            return;
+          } else {
+            // Room exists but not in local state, fetch it
+            await fetchRoomById(otherParticipations[0].room_id);
             setStartingChatWith(null);
             return;
           }
         }
       }
 
-      // Create new chat
+      // Create new chat room
       const { data: newRoom, error: roomError } = await supabase
         .from("chat_rooms")
         .insert({ created_by: user.id })
@@ -459,33 +468,33 @@ const ChatPage = () => {
         .single();
 
       if (roomError || !newRoom) {
-        toast({ title: "Failed to create chat", variant: "destructive" });
+        console.error("Error creating chat room:", roomError);
+        toast({ title: "Failed to create chat room", variant: "destructive" });
         setStartingChatWith(null);
         return;
       }
 
-      // Add participants
-      await supabase.from("chat_participants").insert([
+      // Add both participants
+      const { error: participantError } = await supabase.from("chat_participants").insert([
         { room_id: newRoom.id, user_id: user.id },
         { room_id: newRoom.id, user_id: otherUserId },
       ]);
 
-      await fetchRooms();
-      
-      // Find and select the new room
-      const updatedRooms = await supabase
-        .from("chat_participants")
-        .select("room_id")
-        .eq("room_id", newRoom.id);
-      
-      if (updatedRooms.data) {
-        fetchRoomById(newRoom.id);
+      if (participantError) {
+        console.error("Error adding participants:", participantError);
+        toast({ title: "Failed to add chat participants", variant: "destructive" });
+        setStartingChatWith(null);
+        return;
       }
+
+      // Fetch and select the new room
+      await fetchRoomById(newRoom.id);
     } catch (error) {
+      console.error("Error starting chat:", error);
       toast({ title: "Failed to start chat", variant: "destructive" });
+    } finally {
+      setStartingChatWith(null);
     }
-    
-    setStartingChatWith(null);
   };
 
   const getInitials = (name: string | null) => {
