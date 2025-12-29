@@ -95,26 +95,41 @@ export type Database = {
         Row: {
           created_at: string
           encrypted_content: string
+          encryption_version: number
+          ephemeral_key: string | null
           id: string
           iv: string
+          message_number: number
           room_id: string
           sender_id: string
+          used_prekey_id: number | null
+          used_signed_prekey_id: number | null
         }
         Insert: {
           created_at?: string
           encrypted_content: string
+          encryption_version?: number
+          ephemeral_key?: string | null
           id?: string
           iv: string
+          message_number?: number
           room_id: string
           sender_id: string
+          used_prekey_id?: number | null
+          used_signed_prekey_id?: number | null
         }
         Update: {
           created_at?: string
           encrypted_content?: string
+          encryption_version?: number
+          ephemeral_key?: string | null
           id?: string
           iv?: string
+          message_number?: number
           room_id?: string
           sender_id?: string
+          used_prekey_id?: number | null
+          used_signed_prekey_id?: number | null
         }
         Relationships: [
           {
