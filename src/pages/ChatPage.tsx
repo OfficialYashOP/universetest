@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Send, Loader2, Lock, Search, Plus, ArrowLeft, Users, Shield, Check, CheckCheck } from "lucide-react";
+import { Send, Loader2, Lock, Search, Plus, ArrowLeft, Users, Shield, CheckCheck, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,66 +18,15 @@ import {
   isE2EEReady, 
   encryptChatMessage, 
   decryptChatMessage,
-  getSafetyNumber 
+  ensureSession,
+  getE2EEStatus,
+  repairSession,
+  type E2EEChatMessage,
 } from "@/lib/e2ee";
 import { Badge } from "@/components/ui/badge";
 import { SafetyNumberDialog } from "@/components/chat/SafetyNumberDialog";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { EncryptionBadge } from "@/components/chat/EncryptionBadge";
-
-// Simple encryption utilities for backward compatibility
-const generateKey = async (): Promise<CryptoKey> => {
-  return await crypto.subtle.generateKey(
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-};
-
-const exportKey = async (key: CryptoKey): Promise<string> => {
-  const exported = await crypto.subtle.exportKey("raw", key);
-  return btoa(String.fromCharCode(...new Uint8Array(exported)));
-};
-
-const importKey = async (keyString: string): Promise<CryptoKey> => {
-  const keyBuffer = Uint8Array.from(atob(keyString), c => c.charCodeAt(0));
-  return await crypto.subtle.importKey(
-    "raw",
-    keyBuffer,
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-};
-
-const encryptMessage = async (message: string, key: CryptoKey): Promise<{ encrypted: string; iv: string }> => {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encoded = new TextEncoder().encode(message);
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    encoded
-  );
-  return {
-    encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-    iv: btoa(String.fromCharCode(...iv)),
-  };
-};
-
-const decryptMessage = async (encrypted: string, iv: string, key: CryptoKey): Promise<string> => {
-  try {
-    const encryptedBuffer = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-    const ivBuffer = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
-    const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: ivBuffer },
-      key,
-      encryptedBuffer
-    );
-    return new TextDecoder().decode(decrypted);
-  } catch {
-    return "[Unable to decrypt]";
-  }
-};
 
 interface ChatRoom {
   id: string;
@@ -106,7 +55,11 @@ interface Message {
   encrypted_content: string;
   iv: string;
   created_at: string;
+  message_number?: number;
+  ephemeral_key?: string;
+  encryption_version?: number;
   decrypted?: string;
+  decryptError?: string;
 }
 
 const ChatPage = () => {
@@ -126,22 +79,52 @@ const ChatPage = () => {
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
   const [startingChatWith, setStartingChatWith] = useState<string | null>(null);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
   const [peerTyping, setPeerTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // E2EE state
+  const [e2eeReady, setE2eeReady] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [settingUpSession, setSettingUpSession] = useState(false);
 
   // Get peer ID from selected room
   const peerId = selectedRoom?.participants?.[0]?.user_id;
   const peerName = selectedRoom?.participants?.[0]?.profile?.full_name || "User";
 
+  // Initialize E2EE when user is available
   useEffect(() => {
-    initializeEncryption();
-    fetchRooms();
-    fetchFollowedUsers();
+    if (user?.id) {
+      initializeE2EEForUser();
+    }
+  }, [user?.id]);
+
+  const initializeE2EEForUser = async () => {
+    if (!user?.id) return;
+    
+    console.log('[ChatPage] Initializing E2EE...');
+    const success = await initializeE2EE(user.id);
+    setE2eeReady(success);
+    
+    if (!success) {
+      toast({
+        title: "Encryption setup failed",
+        description: "Messages may not be encrypted. Please refresh the page.",
+        variant: "destructive"
+      });
+    } else {
+      console.log('[ChatPage] E2EE initialized successfully');
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchRooms();
+      fetchFollowedUsers();
+    }
   }, [user?.id]);
 
   // Handle room selection from URL query param
@@ -157,8 +140,34 @@ const ChatPage = () => {
     }
   }, [roomIdFromUrl, rooms, selectedRoom]);
 
+  // Setup E2EE session when room and peer are selected
   useEffect(() => {
-    if (selectedRoom) {
+    if (selectedRoom && peerId && user?.id && e2eeReady) {
+      setupSession();
+    } else {
+      setSessionReady(false);
+    }
+  }, [selectedRoom?.id, peerId, user?.id, e2eeReady]);
+
+  const setupSession = async () => {
+    if (!user?.id || !peerId || !selectedRoom?.id) return;
+    
+    setSettingUpSession(true);
+    console.log('[ChatPage] Setting up E2EE session...');
+    
+    const success = await ensureSession(user.id, peerId, selectedRoom.id);
+    setSessionReady(success);
+    setSettingUpSession(false);
+    
+    if (!success) {
+      console.warn('[ChatPage] Failed to establish secure session');
+    } else {
+      console.log('[ChatPage] E2EE session ready');
+    }
+  };
+
+  useEffect(() => {
+    if (selectedRoom && e2eeReady) {
       fetchMessages(selectedRoom.id);
       const unsubMessages = subscribeToMessages(selectedRoom.id);
       const unsubTyping = subscribeToTyping(selectedRoom.id);
@@ -167,7 +176,7 @@ const ChatPage = () => {
         unsubTyping?.();
       };
     }
-  }, [selectedRoom?.id]);
+  }, [selectedRoom?.id, e2eeReady]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -213,20 +222,6 @@ const ChatPage = () => {
       return [roomWithParticipants, ...prev];
     });
     setSelectedRoom(roomWithParticipants);
-  };
-
-  const initializeEncryption = async () => {
-    // In production, you'd derive this from user credentials or store securely
-    const storedKey = localStorage.getItem(`chat_key_${user?.id}`);
-    if (storedKey) {
-      const key = await importKey(storedKey);
-      setEncryptionKey(key);
-    } else {
-      const key = await generateKey();
-      const exported = await exportKey(key);
-      localStorage.setItem(`chat_key_${user?.id}`, exported);
-      setEncryptionKey(key);
-    }
   };
 
   const fetchRooms = async () => {
@@ -307,6 +302,46 @@ const ChatPage = () => {
     setFollowedUsers(profiles || []);
   };
 
+  const decryptMessageContent = async (msg: Message): Promise<Message> => {
+    if (!user?.id || !peerId) {
+      return { ...msg, decrypted: "[Encryption not ready]" };
+    }
+    
+    // Check if this is a legacy message (v1) or new E2EE message (v2)
+    const isLegacy = msg.encryption_version === 1 || 
+      (msg.message_number === undefined && !msg.ephemeral_key);
+    
+    if (isLegacy) {
+      // Can't decrypt legacy messages with new E2EE system
+      return { ...msg, decrypted: "[Legacy message - cannot decrypt]", decryptError: "legacy" };
+    }
+    
+    const e2eeMessage: E2EEChatMessage = {
+      encrypted_content: msg.encrypted_content,
+      iv: msg.iv,
+      ephemeral_key: msg.ephemeral_key,
+      message_number: msg.message_number || 0,
+    };
+    
+    const result = await decryptChatMessage(user.id, peerId, msg.room_id, e2eeMessage);
+    
+    if (result.text) {
+      return { ...msg, decrypted: result.text };
+    } else if (result.needsRepair) {
+      return { 
+        ...msg, 
+        decrypted: "[Message can't be decrypted (session changed)]",
+        decryptError: "session_mismatch" 
+      };
+    } else {
+      return { 
+        ...msg, 
+        decrypted: "[Unable to decrypt]",
+        decryptError: result.error 
+      };
+    }
+  };
+
   const fetchMessages = async (roomId: string) => {
     const { data } = await supabase
       .from("chat_messages")
@@ -315,14 +350,13 @@ const ChatPage = () => {
       .order("created_at", { ascending: true })
       .limit(100);
 
-    if (data && encryptionKey) {
+    if (data && user?.id && peerId) {
       const decryptedMessages = await Promise.all(
-        data.map(async (msg) => ({
-          ...msg,
-          decrypted: await decryptMessage(msg.encrypted_content, msg.iv, encryptionKey),
-        }))
+        data.map(msg => decryptMessageContent(msg))
       );
       setMessages(decryptedMessages);
+    } else if (data) {
+      setMessages(data.map(msg => ({ ...msg, decrypted: "[Waiting for encryption...]" })));
     }
   };
 
@@ -339,10 +373,8 @@ const ChatPage = () => {
         },
         async (payload) => {
           const newMsg = payload.new as Message;
-          if (encryptionKey) {
-            const decrypted = await decryptMessage(newMsg.encrypted_content, newMsg.iv, encryptionKey);
-            setMessages(prev => [...prev, { ...newMsg, decrypted }]);
-          }
+          const decryptedMsg = await decryptMessageContent(newMsg);
+          setMessages(prev => [...prev, decryptedMsg]);
         }
       )
       .subscribe();
@@ -411,7 +443,16 @@ const ChatPage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedRoom || !user || !encryptionKey) return;
+    if (!newMessage.trim() || !selectedRoom || !user || !peerId) return;
+    
+    // Check if session is ready
+    if (!sessionReady) {
+      toast({
+        title: "Setting up secure connection",
+        description: "Please wait while encryption is established.",
+      });
+      return;
+    }
 
     setSendingMessage(true);
     
@@ -422,13 +463,27 @@ const ChatPage = () => {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    const { encrypted, iv } = await encryptMessage(newMessage.trim(), encryptionKey);
+    // Encrypt with E2EE
+    const encrypted = await encryptChatMessage(user.id, peerId, selectedRoom.id, newMessage.trim());
+    
+    if (!encrypted) {
+      toast({ 
+        title: "Failed to encrypt message", 
+        description: "Please try again.",
+        variant: "destructive" 
+      });
+      setSendingMessage(false);
+      return;
+    }
 
     const { error } = await supabase.from("chat_messages").insert({
       room_id: selectedRoom.id,
       sender_id: user.id,
-      encrypted_content: encrypted,
-      iv,
+      encrypted_content: encrypted.encrypted_content,
+      iv: encrypted.iv,
+      ephemeral_key: encrypted.ephemeral_key,
+      message_number: encrypted.message_number,
+      encryption_version: 2,
     });
 
     setSendingMessage(false);
@@ -553,6 +608,9 @@ const ChatPage = () => {
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Lock className="w-3 h-3" />
               End-to-end encrypted
+              {!e2eeReady && (
+                <span className="text-destructive ml-1">(initializing...)</span>
+              )}
             </p>
           </div>
 
@@ -671,6 +729,11 @@ const ChatPage = () => {
                   <p className="font-semibold">{getChatName(selectedRoom)}</p>
                   <div className="flex items-center gap-2">
                     <EncryptionBadge variant="small" />
+                    {settingUpSession && (
+                      <span className="text-xs text-muted-foreground animate-pulse">
+                        Setting up secure chat...
+                      </span>
+                    )}
                     {peerTyping && (
                       <span className="text-xs text-primary animate-pulse">typing...</span>
                     )}
@@ -702,10 +765,20 @@ const ChatPage = () => {
                           "max-w-[70%] rounded-2xl px-4 py-2",
                           msg.sender_id === user?.id
                             ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
+                            : "bg-muted",
+                          msg.decryptError && "opacity-60"
                         )}
                       >
-                        <p className="break-words">{msg.decrypted}</p>
+                        <p className="break-words">
+                          {msg.decryptError ? (
+                            <span className="flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              {msg.decrypted}
+                            </span>
+                          ) : (
+                            msg.decrypted
+                          )}
+                        </p>
                         <div className={cn(
                           "text-xs mt-1 flex items-center gap-1",
                           msg.sender_id === user?.id
@@ -713,7 +786,7 @@ const ChatPage = () => {
                             : "text-muted-foreground"
                         )}>
                           {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                          {msg.sender_id === user?.id && (
+                          {msg.sender_id === user?.id && !msg.decryptError && (
                             <CheckCheck className="w-3 h-3" />
                           )}
                         </div>
@@ -728,7 +801,7 @@ const ChatPage = () => {
               {/* Message Input */}
               <div className="p-4 border-t border-border flex gap-2">
                 <Input
-                  placeholder="Type a message..."
+                  placeholder={sessionReady ? "Type a message..." : "Setting up encryption..."}
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);
@@ -736,10 +809,11 @@ const ChatPage = () => {
                   }}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                   className="flex-1"
+                  disabled={!sessionReady}
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage}
+                  disabled={!newMessage.trim() || sendingMessage || !sessionReady}
                 >
                   {sendingMessage ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -780,22 +854,22 @@ const ChatPage = () => {
               />
             </div>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {searchResults.map(user => (
+              {searchResults.map(searchUser => (
                 <button
-                  key={user.id}
-                  onClick={() => handleStartChat(user.id)}
+                  key={searchUser.id}
+                  onClick={() => handleStartChat(searchUser.id)}
                   className="w-full p-3 flex items-center gap-3 hover:bg-muted rounded-lg transition-colors"
                 >
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={user.avatar_url || ""} />
+                    <AvatarImage src={searchUser.avatar_url || ""} />
                     <AvatarFallback className="bg-primary/20 text-primary">
-                      {getInitials(user.full_name)}
+                      {getInitials(searchUser.full_name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left">
-                    <p className="font-semibold">{user.full_name || "Unknown"}</p>
-                    {user.username && (
-                      <p className="text-sm text-muted-foreground">@{user.username}</p>
+                    <p className="font-semibold">{searchUser.full_name || "Unknown"}</p>
+                    {searchUser.username && (
+                      <p className="text-sm text-muted-foreground">@{searchUser.username}</p>
                     )}
                   </div>
                 </button>
