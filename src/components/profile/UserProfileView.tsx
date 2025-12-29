@@ -206,62 +206,23 @@ export const UserProfileView = ({ userId, onClose }: UserProfileViewProps) => {
     setIsStartingChat(true);
 
     try {
-      // Check if chat already exists
-      const { data: existingParticipations, error: fetchError } = await supabase
-        .from("chat_participants")
-        .select("room_id")
-        .eq("user_id", user.id);
+      // Use the database function to get or create a chat atomically
+      const { data: roomId, error } = await supabase
+        .rpc("get_or_create_direct_chat", { other_user_id: userId });
 
-      if (fetchError) {
-        console.error("Error fetching participations:", fetchError);
-      }
-
-      const roomIds = existingParticipations?.map(p => p.room_id) || [];
-
-      if (roomIds.length > 0) {
-        const { data: otherParticipations } = await supabase
-          .from("chat_participants")
-          .select("room_id")
-          .eq("user_id", userId)
-          .in("room_id", roomIds);
-
-        if (otherParticipations?.length) {
-          // Chat already exists, navigate to it
-          navigate(`/chat?room=${otherParticipations[0].room_id}`);
-          setIsStartingChat(false);
-          return;
-        }
-      }
-
-      // Create new chat room
-      const { data: newRoom, error: roomError } = await supabase
-        .from("chat_rooms")
-        .insert({ created_by: user.id })
-        .select()
-        .single();
-
-      if (roomError || !newRoom) {
-        console.error("Error creating chat room:", roomError);
-        toast({ title: "Failed to create chat room", variant: "destructive" });
-        setIsStartingChat(false);
+      if (error) {
+        console.error("Error creating/getting chat:", error);
+        toast({ title: "Failed to start chat", description: error.message, variant: "destructive" });
         return;
       }
 
-      // Add both participants in a single insert
-      const { error: participantError } = await supabase.from("chat_participants").insert([
-        { room_id: newRoom.id, user_id: user.id },
-        { room_id: newRoom.id, user_id: userId },
-      ]);
-
-      if (participantError) {
-        console.error("Error adding participants:", participantError);
-        toast({ title: "Failed to add chat participants", variant: "destructive" });
-        setIsStartingChat(false);
+      if (!roomId) {
+        toast({ title: "Failed to start chat", variant: "destructive" });
         return;
       }
 
-      // Navigate to chat page with the new room
-      navigate(`/chat?room=${newRoom.id}`);
+      // Navigate to chat page with the room
+      navigate(`/chat?room=${roomId}`);
     } catch (error) {
       console.error("Error starting chat:", error);
       toast({ title: "Failed to start chat", variant: "destructive" });
