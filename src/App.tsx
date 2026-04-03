@@ -42,6 +42,7 @@ import NotFound from "./pages/NotFound";
 import RequestUniversityPage from "./pages/RequestUniversityPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import VerificationApplicationPage from "./pages/VerificationApplicationPage";
+import JobsPage from "./pages/JobsPage";
 
 // Auth Pages
 import StudentAuthPage from "./pages/auth/StudentAuthPage";
@@ -159,6 +160,11 @@ const App = () => (
               <Route path="/apply-verification" element={
                 <ProtectedRoute>
                   <VerificationApplicationPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/jobs" element={
+                <ProtectedRoute>
+                  <JobsPage />
                 </ProtectedRoute>
               } />
               
