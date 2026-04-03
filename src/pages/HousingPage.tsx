@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -729,8 +730,7 @@ const ListingCard = ({
     setLightboxOpen(true);
   };
 
-  // Import ImageLightbox dynamically to avoid circular deps
-  const ImageLightbox = require("@/components/ui/image-lightbox").ImageLightbox;
+  
 
   return (
     <>
