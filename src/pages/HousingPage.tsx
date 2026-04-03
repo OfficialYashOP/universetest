@@ -730,7 +730,7 @@ const ListingCard = ({
     setLightboxOpen(true);
   };
 
-  // ImageLightbox imported at top of file
+  
 
   return (
     <>
