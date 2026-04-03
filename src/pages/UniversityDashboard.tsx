@@ -164,10 +164,6 @@ const UniversityDashboard = () => {
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Feed</span>
             </TabsTrigger>
-            <TabsTrigger value="housing" className="flex items-center gap-1.5">
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Housing</span>
-            </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center gap-1.5">
               <Wrench className="w-4 h-4" />
               <span className="hidden sm:inline">Services</span>
@@ -180,22 +176,22 @@ const UniversityDashboard = () => {
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">People</span>
             </TabsTrigger>
+            <TabsTrigger value="jobs" className="flex items-center gap-1.5">
+              <Briefcase className="w-4 h-4" />
+              <span className="hidden sm:inline">Jobs</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="feed" className="space-y-6">
             <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-              {/* Sidebar - Groups */}
               <aside className="hidden lg:block space-y-4">
                 <CommunityGroupsSection 
                   selectedGroupId={selectedGroupId}
                   onSelectGroup={setSelectedGroupId}
                 />
               </aside>
-
-              {/* Main Feed */}
               <div className="space-y-4">
                 <CreatePostCardInstagram onPostCreated={fetchPosts} groupId={selectedGroupId || undefined} />
-                
                 {loading ? (
                   <div className="flex justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -223,32 +219,20 @@ const UniversityDashboard = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="housing">
-            <HousingTab />
-          </TabsContent>
-
           <TabsContent value="services">
-            <div className="text-center py-12 text-muted-foreground">
-              <Wrench className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Local services coming soon</p>
-              <p className="text-sm mt-1">Discover restaurants, laundry, and more</p>
-            </div>
+            <ServicesTabContent universityId={profile?.university_id} />
           </TabsContent>
 
           <TabsContent value="resources">
-            <div className="text-center py-12 text-muted-foreground">
-              <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Study resources coming soon</p>
-              <p className="text-sm mt-1">Share and find notes, books, and study materials</p>
-            </div>
+            <ResourcesTabContent universityId={profile?.university_id} />
           </TabsContent>
 
           <TabsContent value="people">
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>People directory coming soon</p>
-              <p className="text-sm mt-1">Connect with students, seniors, and alumni</p>
-            </div>
+            <PeopleTabContent universityId={profile?.university_id} currentUserId={user?.id} />
+          </TabsContent>
+
+          <TabsContent value="jobs">
+            <JobsTabContent />
           </TabsContent>
         </Tabs>
       </div>
