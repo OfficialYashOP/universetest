@@ -729,8 +729,7 @@ const ListingCard = ({
     setLightboxOpen(true);
   };
 
-  // Import ImageLightbox dynamically to avoid circular deps
-  const { ImageLightbox } = await import("@/components/ui/image-lightbox");
+  // ImageLightbox imported at top of file
 
   return (
     <>
