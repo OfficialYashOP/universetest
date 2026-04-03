@@ -83,7 +83,7 @@ const ChatPage = () => {
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
   const [peerTyping, setPeerTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // E2EE state

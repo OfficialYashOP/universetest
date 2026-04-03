@@ -730,7 +730,7 @@ const ListingCard = ({
   };
 
   // Import ImageLightbox dynamically to avoid circular deps
-  const ImageLightbox = require("@/components/ui/image-lightbox").ImageLightbox;
+  const { ImageLightbox } = await import("@/components/ui/image-lightbox");
 
   return (
     <>

@@ -296,7 +296,7 @@ const StoryViewer = ({ userStoriesList, initialUserIndex, onClose, onStoryViewed
   const [progress, setProgress] = useState(0);
   const [reply, setReply] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentUserStories = userStoriesList[userIndex];
   const currentStory = currentUserStories?.stories[storyIndex];
