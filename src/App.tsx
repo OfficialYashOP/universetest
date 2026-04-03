@@ -162,6 +162,11 @@ const App = () => (
                   <VerificationApplicationPage />
                 </ProtectedRoute>
               } />
+              <Route path="/jobs" element={
+                <ProtectedRoute>
+                  <JobsPage />
+                </ProtectedRoute>
+              } />
               
               {/* LPU Campus Assist (Protected) */}
               <Route path="/lpu" element={

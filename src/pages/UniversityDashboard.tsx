@@ -240,4 +240,219 @@ const UniversityDashboard = () => {
   );
 };
 
+// === Inline Tab Components ===
+
+const ServicesTabContent = ({ universityId }: { universityId?: string | null }) => {
+  const { data: services, isLoading } = useQuery({
+    queryKey: ["local-services-tab", universityId],
+    queryFn: async () => {
+      if (!universityId) return [];
+      const { data } = await supabase
+        .from("local_services")
+        .select("*")
+        .eq("university_id", universityId)
+        .eq("is_admin_approved", true)
+        .limit(20);
+      return data || [];
+    },
+    enabled: !!universityId,
+  });
+
+  if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">{services?.length || 0} services available</p>
+        <Link to="/local-services"><Button variant="outline" size="sm">View All</Button></Link>
+      </div>
+      {(!services || services.length === 0) ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Wrench className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No services listed yet</p>
+          <Link to="/local-services"><Button variant="link" className="mt-2">Browse all services</Button></Link>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {services.map(s => (
+            <Card key={s.id} className="hover:border-primary/30 transition-colors">
+              <CardContent className="p-4 space-y-2">
+                <h3 className="font-semibold">{s.name}</h3>
+                <Badge variant="secondary" className="text-xs capitalize">{s.category}</Badge>
+                {s.description && <p className="text-sm text-muted-foreground line-clamp-2">{s.description}</p>}
+                {s.address && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />{s.address}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ResourcesTabContent = ({ universityId }: { universityId?: string | null }) => {
+  const { data: resources, isLoading } = useQuery({
+    queryKey: ["resources-tab", universityId],
+    queryFn: async () => {
+      if (!universityId) return [];
+      const { data } = await supabase
+        .from("academic_resources")
+        .select("*")
+        .eq("university_id", universityId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+    enabled: !!universityId,
+  });
+
+  if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">{resources?.length || 0} resources shared</p>
+        <Link to="/academic-resources"><Button variant="outline" size="sm">View All</Button></Link>
+      </div>
+      {(!resources || resources.length === 0) ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No resources shared yet</p>
+          <Link to="/academic-resources"><Button variant="link" className="mt-2">Browse all resources</Button></Link>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {resources.map(r => (
+            <Card key={r.id} className="hover:border-primary/30 transition-colors">
+              <CardContent className="p-4 space-y-2">
+                <h3 className="font-semibold">{r.title}</h3>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs capitalize">{r.resource_type}</Badge>
+                  {r.condition && <Badge variant="outline" className="text-xs">{r.condition}</Badge>}
+                </div>
+                {r.subject && <p className="text-xs text-muted-foreground">{r.subject}</p>}
+                {r.price != null && (
+                  <p className="text-sm font-medium flex items-center gap-1">
+                    <IndianRupee className="w-3 h-3" />
+                    {r.price === 0 ? "Free" : r.price}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PeopleTabContent = ({ universityId, currentUserId }: { universityId?: string | null; currentUserId?: string }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const { data: members, isLoading } = useQuery({
+    queryKey: ["people-tab", universityId],
+    queryFn: async () => {
+      if (!universityId) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url, bio, branch, year_of_study, is_verified")
+        .eq("university_id", universityId)
+        .neq("id", currentUserId || "")
+        .limit(50);
+      return data || [];
+    },
+    enabled: !!universityId,
+  });
+
+  const filtered = members?.filter(m =>
+    m.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search people..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
+        </div>
+        <Link to="/community"><Button variant="outline" size="sm">View All</Button></Link>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No people found</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(m => (
+            <Card key={m.id} className="hover:border-primary/30 transition-colors cursor-pointer" onClick={() => navigate(`/user/${m.id}`)}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={m.avatar_url || ""} />
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {m.full_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate flex items-center gap-1">
+                    {m.full_name || "Anonymous"}
+                    {m.is_verified && <BadgeCheck className="w-4 h-4 text-primary shrink-0" />}
+                  </p>
+                  {m.username && <p className="text-xs text-muted-foreground">@{m.username}</p>}
+                  {m.branch && <p className="text-xs text-muted-foreground">{m.branch} • {m.year_of_study || ""}</p>}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const demoJobsInline = [
+  { id: "1", title: "Frontend Developer Intern", company: "TechCorp India", location: "Remote", type: "internship", salary: "₹10K-15K/mo", posted: "2d ago" },
+  { id: "2", title: "Campus Ambassador", company: "Sympan", location: "LPU Campus", type: "campus", salary: "₹5K/mo + Perks", posted: "1d ago" },
+  { id: "3", title: "Content Writer", company: "EduBlogs", location: "Remote", type: "freelance", salary: "₹500-1.5K/article", posted: "3d ago" },
+  { id: "4", title: "Data Analyst", company: "Analytics Hub", location: "Bangalore", type: "full-time", salary: "₹4-6 LPA", posted: "5d ago" },
+  { id: "5", title: "Social Media Manager", company: "BrandBoost", location: "Remote", type: "part-time", salary: "₹8-12K/mo", posted: "1w ago" },
+];
+
+const JobsTabContent = () => {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">Latest opportunities</p>
+        <Link to="/jobs"><Button variant="outline" size="sm">View All Jobs</Button></Link>
+      </div>
+      <div className="space-y-3">
+        {demoJobsInline.map(job => (
+          <Card key={job.id} className="hover:border-primary/30 transition-colors">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold truncate">{job.title}</h3>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                  <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{job.company}</span>
+                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{job.location}</span>
+                  <span>{job.salary}</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.posted}</span>
+                </div>
+              </div>
+              <Badge variant="outline" className="text-xs capitalize shrink-0">{job.type}</Badge>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default UniversityDashboard;
