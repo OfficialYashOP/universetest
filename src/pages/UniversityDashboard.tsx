@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CreatePostCardInstagram } from "@/components/feed/CreatePostCardInstagram";
 import { InstagramPostCard } from "@/components/feed/InstagramPostCard";
@@ -8,17 +8,14 @@ import { HousingTab } from "@/components/dashboard/HousingTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { Loader2, Sparkles, Grid3X3 } from "lucide-react";
+import { Loader2, Sparkles, Grid3X3, MessageSquare, Home, Wrench, BookOpen, Users, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  MessageSquare, 
-  Home, 
-  Wrench, 
-  BookOpen, 
-  Users 
-} from "lucide-react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search, MapPin, BadgeCheck, Building2, IndianRupee, Clock, ExternalLink } from "lucide-react";
 
 interface Post {
   id: string;
